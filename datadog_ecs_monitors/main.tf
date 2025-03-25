@@ -175,6 +175,9 @@ resource "datadog_dashboard" "ecs_dashboard" {
       request {
         q            = "avg:aws.ecs.service.cpu_utilization{cluster_name:${var.cluster_name},servicename:${var.service_name}}"
         display_type = "line"
+        metadata {
+          expression = "avg:aws.ecs.service.cpu_utilization{cluster_name:${var.cluster_name},servicename:${var.service_name}}"
+        }
       }
       marker {
         display_type = "error dashed"
@@ -200,6 +203,9 @@ resource "datadog_dashboard" "ecs_dashboard" {
       request {
         q            = "avg:aws.ecs.service.memory_utilization{cluster_name:${var.cluster_name},servicename:${var.service_name}}"
         display_type = "line"
+        metadata {
+          expression = "avg:aws.ecs.service.memory_utilization{cluster_name:${var.cluster_name},servicename:${var.service_name}}"
+        }
       }
       marker {
         display_type = "error dashed"
@@ -249,6 +255,9 @@ resource "datadog_dashboard" "ecs_dashboard" {
       request {
         q            = "100 * abs(avg:aws.ecs.service.running{cluster_name:${var.cluster_name},servicename:${var.service_name}} - avg:aws.ecs.service.desired{cluster_name:${var.cluster_name},servicename:${var.service_name}}) / max(avg:aws.ecs.service.desired{cluster_name:${var.cluster_name},servicename:${var.service_name}}, 1)"
         display_type = "line"
+        metadata {
+          expression = "100 * abs(avg:aws.ecs.service.running{cluster_name:${var.cluster_name},servicename:${var.service_name}} - avg:aws.ecs.service.desired{cluster_name:${var.cluster_name},servicename:${var.service_name}}) / max(avg:aws.ecs.service.desired{cluster_name:${var.cluster_name},servicename:${var.service_name}}, 1)"
+        }
       }
       marker {
         display_type = "error dashed"
@@ -274,6 +283,9 @@ resource "datadog_dashboard" "ecs_dashboard" {
       request {
         q            = "sum:aws.ecs.service.deployment_failures{cluster_name:${var.cluster_name},servicename:${var.service_name}}.as_count()"
         display_type = "bars"
+        metadata {
+          expression = "sum:aws.ecs.service.deployment_failures{cluster_name:${var.cluster_name},servicename:${var.service_name}}.as_count()"
+        }
       }
       marker {
         display_type = "error dashed"
@@ -298,6 +310,9 @@ resource "datadog_dashboard" "ecs_dashboard" {
       request {
         q            = "derivative(avg:aws.ecs.containerinsights.restarts{cluster_name:${var.cluster_name},service_name:${var.service_name}})"
         display_type = "bars"
+        metadata {
+          expression = "derivative(avg:aws.ecs.containerinsights.restarts{cluster_name:${var.cluster_name},service_name:${var.service_name}})"
+        }
       }
       marker {
         display_type = "error dashed"
@@ -319,13 +334,11 @@ resource "datadog_dashboard" "ecs_dashboard" {
   template_variable {
     name    = "cluster"
     prefix  = "cluster_name"
-    default = var.cluster_name
   }
   
   template_variable {
     name    = "service"
     prefix  = "servicename"
-    default = var.service_name
   }
   
   template_variable_preset {

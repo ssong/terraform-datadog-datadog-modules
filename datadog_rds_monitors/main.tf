@@ -205,6 +205,9 @@ resource "datadog_dashboard" "rds_dashboard" {
       request {
         q            = "avg:aws.rds.cpuutilization{dbinstanceidentifier:${var.db_instance_identifier}}"
         display_type = "line"
+        metadata {
+          expression = "avg:aws.rds.cpuutilization{dbinstanceidentifier:${var.db_instance_identifier}}"
+        }
       }
       marker {
         display_type = "error dashed"
@@ -230,6 +233,9 @@ resource "datadog_dashboard" "rds_dashboard" {
       request {
         q            = "100 - avg:aws.rds.freeable_memory{dbinstanceidentifier:${var.db_instance_identifier}} / avg:aws.rds.total_memory{dbinstanceidentifier:${var.db_instance_identifier}} * 100"
         display_type = "line"
+        metadata {
+          expression = "100 - avg:aws.rds.freeable_memory{dbinstanceidentifier:${var.db_instance_identifier}} / avg:aws.rds.total_memory{dbinstanceidentifier:${var.db_instance_identifier}} * 100"
+        }
       }
       marker {
         display_type = "error dashed"
@@ -255,6 +261,9 @@ resource "datadog_dashboard" "rds_dashboard" {
       request {
         q            = "avg:aws.rds.disk_queue_depth{dbinstanceidentifier:${var.db_instance_identifier}}"
         display_type = "line"
+        metadata {
+          expression = "avg:aws.rds.disk_queue_depth{dbinstanceidentifier:${var.db_instance_identifier}}"
+        }
       }
       marker {
         display_type = "error dashed"
@@ -279,6 +288,9 @@ resource "datadog_dashboard" "rds_dashboard" {
       request {
         q            = "avg:aws.rds.free_storage_space{dbinstanceidentifier:${var.db_instance_identifier}} / avg:aws.rds.total_storage_space{dbinstanceidentifier:${var.db_instance_identifier}} * 100"
         display_type = "line"
+        metadata {
+          expression = "avg:aws.rds.free_storage_space{dbinstanceidentifier:${var.db_instance_identifier}} / avg:aws.rds.total_storage_space{dbinstanceidentifier:${var.db_instance_identifier}} * 100"
+        }
       }
       marker {
         display_type = "error dashed"
@@ -304,6 +316,9 @@ resource "datadog_dashboard" "rds_dashboard" {
       request {
         q            = "avg:aws.rds.database_connections{dbinstanceidentifier:${var.db_instance_identifier}}"
         display_type = "line"
+        metadata {
+          expression = "avg:aws.rds.database_connections{dbinstanceidentifier:${var.db_instance_identifier}}"
+        }
       }
       request {
         q            = "${var.max_connections}"
@@ -314,6 +329,7 @@ resource "datadog_dashboard" "rds_dashboard" {
         }
         metadata {
           alias_name = "Max Connections"
+          expression = "${var.max_connections}"
         }
       }
       marker {
@@ -339,6 +355,9 @@ resource "datadog_dashboard" "rds_dashboard" {
       request {
         q            = "avg:aws.rds.replica_lag{dbinstanceidentifier:${var.db_instance_identifier}}"
         display_type = "line"
+        metadata {
+          expression = "avg:aws.rds.replica_lag{dbinstanceidentifier:${var.db_instance_identifier}}"
+        }
       }
       marker {
         display_type = "error dashed"
@@ -366,6 +385,7 @@ resource "datadog_dashboard" "rds_dashboard" {
         display_type = "line"
         metadata {
           alias_name = "Read IOPS"
+          expression = "avg:aws.rds.read_iops{dbinstanceidentifier:${var.db_instance_identifier}}"
         }
       }
       request {
@@ -373,6 +393,7 @@ resource "datadog_dashboard" "rds_dashboard" {
         display_type = "line"
         metadata {
           alias_name = "Write IOPS"
+          expression = "avg:aws.rds.write_iops{dbinstanceidentifier:${var.db_instance_identifier}}"
         }
       }
       yaxis {
@@ -385,7 +406,6 @@ resource "datadog_dashboard" "rds_dashboard" {
   template_variable {
     name    = "db_instance"
     prefix  = "dbinstanceidentifier"
-    default = var.db_instance_identifier
   }
   
   template_variable_preset {

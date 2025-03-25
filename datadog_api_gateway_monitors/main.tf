@@ -175,6 +175,9 @@ resource "datadog_dashboard" "api_gateway_dashboard" {
       request {
         q            = "sum:aws.apigateway.count{apiname:${var.api_gateway_name}}.as_count()"
         display_type = "line"
+        metadata {
+          expression = "sum:aws.apigateway.count{apiname:${var.api_gateway_name}}.as_count()"
+        }
       }
       yaxis {
         include_zero = true
@@ -189,14 +192,23 @@ resource "datadog_dashboard" "api_gateway_dashboard" {
       request {
         q            = "p50:aws.apigateway.latency{apiname:${var.api_gateway_name}}"
         display_type = "line"
+        metadata {
+          expression = "p50:aws.apigateway.latency{apiname:${var.api_gateway_name}}"
+        }
       }
       request {
         q            = "p90:aws.apigateway.latency{apiname:${var.api_gateway_name}}"
         display_type = "line"
+        metadata {
+          expression = "p90:aws.apigateway.latency{apiname:${var.api_gateway_name}}"
+        }
       }
       request {
         q            = "p99:aws.apigateway.latency{apiname:${var.api_gateway_name}}"
         display_type = "line"
+        metadata {
+          expression = "p99:aws.apigateway.latency{apiname:${var.api_gateway_name}}"
+        }
       }
       marker {
         display_type = "error dashed"
@@ -221,6 +233,9 @@ resource "datadog_dashboard" "api_gateway_dashboard" {
       request {
         q            = "avg:aws.apigateway.integration_latency{apiname:${var.api_gateway_name}}"
         display_type = "line"
+        metadata {
+          expression = "avg:aws.apigateway.integration_latency{apiname:${var.api_gateway_name}}"
+        }
       }
       marker {
         display_type = "error dashed"
@@ -245,6 +260,9 @@ resource "datadog_dashboard" "api_gateway_dashboard" {
       request {
         q            = "100 * (sum:aws.apigateway.5xxerror{apiname:${var.api_gateway_name}}.as_count() + sum:aws.apigateway.4xxerror{apiname:${var.api_gateway_name}}.as_count()) / sum:aws.apigateway.count{apiname:${var.api_gateway_name}}.as_count()"
         display_type = "line"
+        metadata {
+          expression = "100 * (sum:aws.apigateway.5xxerror{apiname:${var.api_gateway_name}}.as_count() + sum:aws.apigateway.4xxerror{apiname:${var.api_gateway_name}}.as_count()) / sum:aws.apigateway.count{apiname:${var.api_gateway_name}}.as_count()"
+        }
       }
       marker {
         display_type = "error dashed"
@@ -271,6 +289,7 @@ resource "datadog_dashboard" "api_gateway_dashboard" {
         q            = "sum:aws.apigateway.4xxerror{apiname:${var.api_gateway_name}}.as_count()"
         display_type = "line"
         metadata {
+          expression = "sum:aws.apigateway.4xxerror{apiname:${var.api_gateway_name}}.as_count()"
           alias_name = "4xx errors"
         }
       }
@@ -278,6 +297,7 @@ resource "datadog_dashboard" "api_gateway_dashboard" {
         q            = "sum:aws.apigateway.5xxerror{apiname:${var.api_gateway_name}}.as_count()"
         display_type = "line"
         metadata {
+          expression = "sum:aws.apigateway.5xxerror{apiname:${var.api_gateway_name}}.as_count()"
           alias_name = "5xx errors"
         }
       }
@@ -294,6 +314,9 @@ resource "datadog_dashboard" "api_gateway_dashboard" {
       request {
         q            = "sum:aws.apigateway.throttlecount{apiname:${var.api_gateway_name}}.as_count()"
         display_type = "line"
+        metadata {
+          expression = "sum:aws.apigateway.throttlecount{apiname:${var.api_gateway_name}}.as_count()"
+        }
       }
       marker {
         display_type = "error dashed"
@@ -315,7 +338,7 @@ resource "datadog_dashboard" "api_gateway_dashboard" {
   template_variable {
     name    = "apigateway"
     prefix  = "apiname"
-    default = var.api_gateway_name
+    defaults = [var.api_gateway_name]
   }
   
   template_variable_preset {
@@ -323,7 +346,7 @@ resource "datadog_dashboard" "api_gateway_dashboard" {
     
     template_variable {
       name  = "apigateway"
-      value = var.api_gateway_name
+      values = [var.api_gateway_name]
     }
   }
   

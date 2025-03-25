@@ -173,17 +173,24 @@ resource "datadog_dashboard" "sqs_dashboard" {
     timeseries_definition {
       title = "Messages Sent vs Received"
       request {
-        q            = "sum:aws.sqs.number_of_messages_sent{queue_name:${var.queue_name}}.as_count()"
         display_type = "line"
-        metadata {
-          alias_name = "Messages Sent"
+        formulas {
+          formula = "query0"
+          alias = "Messages Sent"
         }
-      }
-      request {
-        q            = "sum:aws.sqs.number_of_messages_received{queue_name:${var.queue_name}}.as_count()"
-        display_type = "line"
-        metadata {
-          alias_name = "Messages Received"
+        formulas {
+          formula = "query1"
+          alias = "Messages Received"
+        }
+        queries {
+          name    = "query0"
+          query   = "sum:aws.sqs.number_of_messages_sent{queue_name:${var.queue_name}}.as_count()"
+          data_source = "metrics"
+        }
+        queries {
+          name    = "query1"
+          query   = "sum:aws.sqs.number_of_messages_received{queue_name:${var.queue_name}}.as_count()"
+          data_source = "metrics"
         }
       }
       yaxis {
@@ -197,24 +204,33 @@ resource "datadog_dashboard" "sqs_dashboard" {
     timeseries_definition {
       title = "Queue Depth (Visible, Not Visible, Delayed)"
       request {
-        q            = "avg:aws.sqs.approximate_number_of_messages_visible{queue_name:${var.queue_name}}"
         display_type = "line"
-        metadata {
-          alias_name = "Visible Messages"
+        formulas {
+          formula = "query0"
+          alias = "Visible Messages"
         }
-      }
-      request {
-        q            = "avg:aws.sqs.approximate_number_of_messages_not_visible{queue_name:${var.queue_name}}"
-        display_type = "line"
-        metadata {
-          alias_name = "Not Visible Messages"
+        formulas {
+          formula = "query1"
+          alias = "Not Visible Messages"
         }
-      }
-      request {
-        q            = "avg:aws.sqs.approximate_number_of_messages_delayed{queue_name:${var.queue_name}}"
-        display_type = "line" 
-        metadata {
-          alias_name = "Delayed Messages"
+        formulas {
+          formula = "query2"
+          alias = "Delayed Messages"
+        }
+        queries {
+          name    = "query0"
+          query   = "avg:aws.sqs.approximate_number_of_messages_visible{queue_name:${var.queue_name}}"
+          data_source = "metrics"
+        }
+        queries {
+          name    = "query1"
+          query   = "avg:aws.sqs.approximate_number_of_messages_not_visible{queue_name:${var.queue_name}}"
+          data_source = "metrics"
+        }
+        queries {
+          name    = "query2"
+          query   = "avg:aws.sqs.approximate_number_of_messages_delayed{queue_name:${var.queue_name}}"
+          data_source = "metrics"
         }
       }
       marker {
@@ -240,6 +256,9 @@ resource "datadog_dashboard" "sqs_dashboard" {
       request {
         q            = "avg:aws.sqs.approximate_age_of_oldest_message{queue_name:${var.queue_name}}"
         display_type = "line"
+        metadata {
+          expression = "avg:aws.sqs.approximate_age_of_oldest_message{queue_name:${var.queue_name}}"
+        }
       }
       marker {
         display_type = "error dashed"
@@ -264,6 +283,9 @@ resource "datadog_dashboard" "sqs_dashboard" {
       request {
         q            = "100 * (sum:aws.sqs.number_of_messages_received_not_valid{queue_name:${var.queue_name}}.as_count() / sum:aws.sqs.number_of_messages_received{queue_name:${var.queue_name}}.as_count())"
         display_type = "line"
+        metadata {
+          expression = "100 * (sum:aws.sqs.number_of_messages_received_not_valid{queue_name:${var.queue_name}}.as_count() / sum:aws.sqs.number_of_messages_received{queue_name:${var.queue_name}}.as_count())"
+        }
       }
       marker {
         display_type = "error dashed"
@@ -289,6 +311,9 @@ resource "datadog_dashboard" "sqs_dashboard" {
       request {
         q            = "sum:aws.sqs.number_of_messages_deleted{queue_name:${var.queue_name}}.as_count()"
         display_type = "line"
+        metadata {
+          expression = "sum:aws.sqs.number_of_messages_deleted{queue_name:${var.queue_name}}.as_count()"
+        }
       }
       yaxis {
         include_zero = true
@@ -300,7 +325,6 @@ resource "datadog_dashboard" "sqs_dashboard" {
   template_variable {
     name    = "queue"
     prefix  = "queue_name"
-    default = var.queue_name
   }
   
   template_variable_preset {

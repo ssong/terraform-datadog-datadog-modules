@@ -173,8 +173,15 @@ resource "datadog_dashboard" "lambda_dashboard" {
     timeseries_definition {
       title = "Invocations"
       request {
-        q            = "avg:aws.lambda.invocations{aws_function_name:${var.lambda_function_name}}.as_count()"
         display_type = "line"
+        formulas {
+          formula = "query0"
+        }
+        queries {
+          name    = "query0"
+          query   = "avg:aws.lambda.invocations{aws_function_name:${var.lambda_function_name}}.as_count()"
+          data_source = "metrics"
+        }
       }
       yaxis {
         include_zero = true
@@ -187,16 +194,34 @@ resource "datadog_dashboard" "lambda_dashboard" {
     timeseries_definition {
       title = "Duration (p50, p90, p99)"
       request {
-        q            = "p50:aws.lambda.duration{aws_function_name:${var.lambda_function_name}}"
         display_type = "line"
-      }
-      request {
-        q            = "p90:aws.lambda.duration{aws_function_name:${var.lambda_function_name}}"
-        display_type = "line"
-      }
-      request {
-        q            = "p99:aws.lambda.duration{aws_function_name:${var.lambda_function_name}}"
-        display_type = "line"
+        formulas {
+          formula = "query0"
+          alias = "p50"
+        }
+        formulas {
+          formula = "query1"
+          alias = "p90"
+        }
+        formulas {
+          formula = "query2"
+          alias = "p99"
+        }
+        queries {
+          name    = "query0"
+          query   = "p50:aws.lambda.duration{aws_function_name:${var.lambda_function_name}}"
+          data_source = "metrics"
+        }
+        queries {
+          name    = "query1"
+          query   = "p90:aws.lambda.duration{aws_function_name:${var.lambda_function_name}}"
+          data_source = "metrics"
+        }
+        queries {
+          name    = "query2"
+          query   = "p99:aws.lambda.duration{aws_function_name:${var.lambda_function_name}}"
+          data_source = "metrics"
+        }
       }
       yaxis {
         include_zero = true
@@ -209,8 +234,21 @@ resource "datadog_dashboard" "lambda_dashboard" {
     timeseries_definition {
       title = "Error Rate (%)"
       request {
-        q            = "100 * (sum:aws.lambda.errors{aws_function_name:${var.lambda_function_name}}.as_count() / sum:aws.lambda.invocations{aws_function_name:${var.lambda_function_name}}.as_count())"
         display_type = "line"
+        formulas {
+          formula = "100 * (query0 / query1)"
+          alias = "Error Rate %"
+        }
+        queries {
+          name    = "query0"
+          query   = "sum:aws.lambda.errors{aws_function_name:${var.lambda_function_name}}.as_count()"
+          data_source = "metrics"
+        }
+        queries {
+          name    = "query1"
+          query   = "sum:aws.lambda.invocations{aws_function_name:${var.lambda_function_name}}.as_count()"
+          data_source = "metrics"
+        }
       }
       marker {
         display_type = "error dashed"
@@ -234,8 +272,15 @@ resource "datadog_dashboard" "lambda_dashboard" {
     timeseries_definition {
       title = "Throttles"
       request {
-        q            = "avg:aws.lambda.throttles{aws_function_name:${var.lambda_function_name}}.as_count()"
         display_type = "line"
+        formulas {
+          formula = "query0"
+        }
+        queries {
+          name    = "query0"
+          query   = "avg:aws.lambda.throttles{aws_function_name:${var.lambda_function_name}}.as_count()"
+          data_source = "metrics"
+        }
       }
       marker {
         display_type = "error dashed"
@@ -258,15 +303,28 @@ resource "datadog_dashboard" "lambda_dashboard" {
     timeseries_definition {
       title = "Concurrent Executions"
       request {
-        q            = "avg:aws.lambda.concurrent_executions{aws_function_name:${var.lambda_function_name}}"
         display_type = "line"
-      }
-      request {
-        q            = "${var.concurrent_execution_limit}"
-        display_type = "line"
-        style {
-          line_type  = "dashed"
-          line_width = "thin"
+        formulas {
+          formula = "query0"
+          alias = "Concurrent Executions"
+        }
+        formulas {
+          formula = "query1"
+          alias = "Limit"
+          style {
+            line_type  = "dashed"
+            line_width = "thin"
+          }
+        }
+        queries {
+          name    = "query0"
+          query   = "avg:aws.lambda.concurrent_executions{aws_function_name:${var.lambda_function_name}}"
+          data_source = "metrics"
+        }
+        queries {
+          name    = "query1"
+          query   = "${var.concurrent_execution_limit}"
+          data_source = "metrics"
         }
       }
       yaxis {
@@ -280,8 +338,15 @@ resource "datadog_dashboard" "lambda_dashboard" {
     timeseries_definition {
       title = "Memory Utilization"
       request {
-        q            = "avg:aws.lambda.enhanced.memory_utilization{aws_function_name:${var.lambda_function_name}}"
         display_type = "line"
+        formulas {
+          formula = "query0"
+        }
+        queries {
+          name    = "query0"
+          query   = "avg:aws.lambda.enhanced.memory_utilization{aws_function_name:${var.lambda_function_name}}"
+          data_source = "metrics"
+        }
       }
       yaxis {
         include_zero = true
@@ -294,7 +359,6 @@ resource "datadog_dashboard" "lambda_dashboard" {
   template_variable {
     name    = "function"
     prefix  = "aws_function_name"
-    default = var.lambda_function_name
   }
   
   template_variable_preset {
