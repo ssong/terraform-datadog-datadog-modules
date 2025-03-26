@@ -70,7 +70,7 @@ resource "datadog_monitor" "api_gateway_error_rate" {
   type               = "query alert"
   message            = <<-EOT
     API Gateway ${var.api_gateway_name} is experiencing a high error rate.
-    
+
     Notify: ${var.notification_target}
   EOT
   escalation_message = "API Gateway ${var.api_gateway_name} continues to experience high error rates!"
@@ -84,7 +84,7 @@ resource "datadog_monitor" "api_gateway_error_rate" {
   }
 
   include_tags = true
-  tags         = concat(var.tags, ["api_gateway:${var.api_gateway_name}", "managed_by:terraform"])
+  tags         = concat(var.tags, ["api_gateway:${var.api_gateway_name}", "managed_by:terraform", "team:${var.team}"])
 
   priority = local.priorities[var.criticality]
 }
@@ -94,7 +94,7 @@ resource "datadog_monitor" "api_gateway_latency" {
   type               = "query alert"
   message            = <<-EOT
     API Gateway ${var.api_gateway_name} is experiencing high latency.
-    
+
     Notify: ${var.notification_target}
   EOT
   escalation_message = "API Gateway ${var.api_gateway_name} continues to experience high latency!"
@@ -108,7 +108,7 @@ resource "datadog_monitor" "api_gateway_latency" {
   }
 
   include_tags = true
-  tags         = concat(var.tags, ["api_gateway:${var.api_gateway_name}", "managed_by:terraform"])
+  tags         = concat(var.tags, ["api_gateway:${var.api_gateway_name}", "managed_by:terraform", "team:${var.team}"])
 
   priority = local.priorities[var.criticality]
 }
@@ -118,7 +118,7 @@ resource "datadog_monitor" "api_gateway_count_drop" {
   type               = "query alert"
   message            = <<-EOT
     API Gateway ${var.api_gateway_name} request count has dropped significantly.
-    
+
     Notify: ${var.notification_target}
   EOT
   escalation_message = "API Gateway ${var.api_gateway_name} request count continues to be below expected levels!"
@@ -132,7 +132,7 @@ resource "datadog_monitor" "api_gateway_count_drop" {
   }
 
   include_tags = true
-  tags         = concat(var.tags, ["api_gateway:${var.api_gateway_name}", "managed_by:terraform"])
+  tags         = concat(var.tags, ["api_gateway:${var.api_gateway_name}", "managed_by:terraform", "team:${var.team}"])
 
   priority = local.priorities[var.criticality]
 }
@@ -142,7 +142,7 @@ resource "datadog_monitor" "api_gateway_throttles" {
   type               = "query alert"
   message            = <<-EOT
     API Gateway ${var.api_gateway_name} is being throttled.
-    
+
     Notify: ${var.notification_target}
   EOT
   escalation_message = "API Gateway ${var.api_gateway_name} continues to be throttled!"
@@ -156,7 +156,7 @@ resource "datadog_monitor" "api_gateway_throttles" {
   }
 
   include_tags = true
-  tags         = concat(var.tags, ["api_gateway:${var.api_gateway_name}", "managed_by:terraform"])
+  tags         = concat(var.tags, ["api_gateway:${var.api_gateway_name}", "managed_by:terraform", "team:${var.team}"])
 
   priority = local.priorities[var.criticality]
 }
@@ -166,7 +166,7 @@ resource "datadog_monitor" "api_gateway_integration_latency" {
   type               = "query alert"
   message            = <<-EOT
     API Gateway ${var.api_gateway_name} is experiencing high integration latency.
-    
+
     Notify: ${var.notification_target}
   EOT
   escalation_message = "API Gateway ${var.api_gateway_name} continues to experience high integration latency!"
@@ -180,7 +180,7 @@ resource "datadog_monitor" "api_gateway_integration_latency" {
   }
 
   include_tags = true
-  tags         = concat(var.tags, ["api_gateway:${var.api_gateway_name}", "managed_by:terraform"])
+  tags         = concat(var.tags, ["api_gateway:${var.api_gateway_name}", "managed_by:terraform", "team:${var.team}"])
 
   priority = local.priorities[var.criticality]
 }
@@ -373,5 +373,5 @@ resource "datadog_dashboard" "api_gateway_dashboard" {
     }
   }
 
-  tags = concat(var.tags, ["api_gateway:${var.api_gateway_name}", "managed_by:terraform"])
+  tags = concat(var.tags, ["api_gateway:${var.api_gateway_name}", "managed_by:terraform", "team:${var.team}"])
 }

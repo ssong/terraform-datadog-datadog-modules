@@ -18,8 +18,9 @@ module "api_gateway_monitors" {
 
   api_gateway_name     = "my-api-gateway"
   criticality          = "high"  # Options: low, medium, high
+  team                 = "engagement"  # Options: engagement, acquisition, shared-services
   notification_target  = "@slack-channel @pagerduty-service"
-  tags                 = ["service:api-gateway", "team:platform"]
+  tags                 = ["service:api-gateway"]
 }
 ```
 
@@ -34,6 +35,7 @@ module "api_gateway_monitors" {
 | tags | Additional tags to add to the monitors | list(string) | [] | no |
 | evaluation_period | The evaluation period for the monitors, in minutes | string | "last_15m" | no |
 | baseline_period | The baseline period for comparison monitors, in hours | string | "hour_before" | no |
+| team | The team responsible for the API Gateway (engagement, acquisition, shared-services) | string | n/a | yes |
 
 ## Outputs
 

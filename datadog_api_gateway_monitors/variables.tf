@@ -52,3 +52,12 @@ variable "dashboard_name_prefix" {
   type        = string
   default     = "API Gateway Metrics"
 }
+
+variable "team" {
+  description = "The team responsible for the API Gateway (engagement, acquisition, shared-services)"
+  type        = string
+  validation {
+    condition     = contains(["engagement", "acquisition", "shared-services"], var.team)
+    error_message = "Team must be one of: engagement, acquisition, shared-services"
+  }
+}
