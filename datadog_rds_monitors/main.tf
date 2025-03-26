@@ -11,44 +11,62 @@ locals {
     low = {
       cpu_utilization        = 90.0
       cpu_warning            = 80.0
+      cpu_recovery           = 75.0
       memory_utilization     = 90.0
       memory_warning         = 80.0
+      memory_recovery        = 75.0
       disk_queue_depth       = 25.0
       disk_queue_warning     = 15.0
+      disk_queue_recovery    = 10.0
       disk_free_storage      = 10.0
       disk_free_warning      = 20.0
+      disk_free_recovery     = 25.0
       connection_count       = 90.0
       connection_warning     = 80.0
+      connection_recovery    = 75.0
       replica_lag            = 300.0
       replica_lag_warning    = 180.0
+      replica_lag_recovery   = 120.0
     }
     medium = {
       cpu_utilization        = 85.0
       cpu_warning            = 75.0
+      cpu_recovery           = 65.0
       memory_utilization     = 85.0
       memory_warning         = 75.0
+      memory_recovery        = 65.0
       disk_queue_depth       = 20.0
       disk_queue_warning     = 10.0
+      disk_queue_recovery    = 7.0
       disk_free_storage      = 15.0
       disk_free_warning      = 25.0
+      disk_free_recovery     = 30.0
       connection_count       = 80.0
       connection_warning     = 70.0
+      connection_recovery    = 60.0
       replica_lag            = 180.0
       replica_lag_warning    = 90.0
+      replica_lag_recovery   = 60.0
     }
     high = {
       cpu_utilization        = 80.0
       cpu_warning            = 70.0
+      cpu_recovery           = 60.0
       memory_utilization     = 80.0
       memory_warning         = 70.0
+      memory_recovery        = 60.0
       disk_queue_depth       = 15.0
       disk_queue_warning     = 7.0
+      disk_queue_recovery    = 5.0
       disk_free_storage      = 20.0
       disk_free_warning      = 30.0
+      disk_free_recovery     = 35.0
       connection_count       = 70.0
       connection_warning     = 60.0
+      connection_recovery    = 50.0
       replica_lag            = 60.0
       replica_lag_warning    = 30.0
+      replica_lag_recovery   = 15.0
     }
   }
 }
@@ -68,6 +86,7 @@ resource "datadog_monitor" "rds_cpu_utilization" {
   monitor_thresholds {
     critical = local.thresholds[var.criticality].cpu_utilization
     warning  = local.thresholds[var.criticality].cpu_warning
+    recovery = local.thresholds[var.criticality].cpu_recovery
   }
 
   include_tags = true
@@ -91,6 +110,7 @@ resource "datadog_monitor" "rds_memory_utilization" {
   monitor_thresholds {
     critical = 100 - local.thresholds[var.criticality].memory_utilization
     warning  = 100 - local.thresholds[var.criticality].memory_warning
+    recovery = 100 - local.thresholds[var.criticality].memory_recovery
   }
 
   include_tags = true
@@ -114,6 +134,7 @@ resource "datadog_monitor" "rds_disk_queue_depth" {
   monitor_thresholds {
     critical = local.thresholds[var.criticality].disk_queue_depth
     warning  = local.thresholds[var.criticality].disk_queue_warning
+    recovery = local.thresholds[var.criticality].disk_queue_recovery
   }
 
   include_tags = true
@@ -137,6 +158,7 @@ resource "datadog_monitor" "rds_free_storage_space" {
   monitor_thresholds {
     critical = local.thresholds[var.criticality].disk_free_storage
     warning  = local.thresholds[var.criticality].disk_free_warning
+    recovery = local.thresholds[var.criticality].disk_free_recovery
   }
 
   include_tags = true
@@ -160,6 +182,7 @@ resource "datadog_monitor" "rds_connection_count" {
   monitor_thresholds {
     critical = local.thresholds[var.criticality].connection_count
     warning  = local.thresholds[var.criticality].connection_warning
+    recovery = local.thresholds[var.criticality].connection_recovery
   }
 
   include_tags = true
@@ -184,6 +207,7 @@ resource "datadog_monitor" "rds_replica_lag" {
   monitor_thresholds {
     critical = local.thresholds[var.criticality].replica_lag
     warning  = local.thresholds[var.criticality].replica_lag_warning
+    recovery = local.thresholds[var.criticality].replica_lag_recovery
   }
 
   include_tags = true

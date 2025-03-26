@@ -11,38 +11,53 @@ locals {
     low = {
       error_rate           = 10.0
       error_rate_warning   = 5.0
+      error_rate_recovery  = 4.0
       duration_p90         = 5000
       duration_p90_warning = 3000
+      duration_p90_recovery = 2500
       throttles            = 10.0
       throttles_warning    = 5.0
+      throttles_recovery   = 3.0
       invocation_drop      = 50.0
       invocation_warning   = 30.0
+      invocation_recovery  = 25.0
       concurrent_limit     = 80.0
       concurrent_warning   = 70.0
+      concurrent_recovery  = 65.0
     }
     medium = {
       error_rate           = 5.0
       error_rate_warning   = 2.0
+      error_rate_recovery  = 1.5
       duration_p90         = 3000
       duration_p90_warning = 2000
+      duration_p90_recovery = 1500
       throttles            = 5.0
       throttles_warning    = 2.0
+      throttles_recovery   = 1.0
       invocation_drop      = 30.0
       invocation_warning   = 15.0
+      invocation_recovery  = 10.0
       concurrent_limit     = 70.0
       concurrent_warning   = 60.0
+      concurrent_recovery  = 55.0
     }
     high = {
       error_rate           = 2.0
       error_rate_warning   = 1.0
+      error_rate_recovery  = 0.5
       duration_p90         = 1000
       duration_p90_warning = 800
+      duration_p90_recovery = 600
       throttles            = 2.0
       throttles_warning    = 1.0
+      throttles_recovery   = 0.5
       invocation_drop      = 15.0
       invocation_warning   = 10.0
+      invocation_recovery  = 5.0
       concurrent_limit     = 60.0
       concurrent_warning   = 50.0
+      concurrent_recovery  = 45.0
     }
   }
 }
@@ -62,6 +77,7 @@ resource "datadog_monitor" "lambda_error_rate" {
   monitor_thresholds {
     critical = local.thresholds[var.criticality].error_rate
     warning  = local.thresholds[var.criticality].error_rate_warning
+    recovery = local.thresholds[var.criticality].error_rate_recovery
   }
 
   include_tags = true
@@ -85,6 +101,7 @@ resource "datadog_monitor" "lambda_duration" {
   monitor_thresholds {
     critical = local.thresholds[var.criticality].duration_p90
     warning  = local.thresholds[var.criticality].duration_p90_warning
+    recovery = local.thresholds[var.criticality].duration_p90_recovery
   }
 
   include_tags = true
@@ -108,6 +125,7 @@ resource "datadog_monitor" "lambda_throttles" {
   monitor_thresholds {
     critical = local.thresholds[var.criticality].throttles
     warning  = local.thresholds[var.criticality].throttles_warning
+    recovery = local.thresholds[var.criticality].throttles_recovery
   }
 
   include_tags = true
@@ -131,6 +149,7 @@ resource "datadog_monitor" "lambda_invocation_drop" {
   monitor_thresholds {
     critical = -1 * local.thresholds[var.criticality].invocation_drop
     warning  = -1 * local.thresholds[var.criticality].invocation_warning
+    recovery = -1 * local.thresholds[var.criticality].invocation_recovery
   }
 
   include_tags = true
@@ -154,6 +173,7 @@ resource "datadog_monitor" "lambda_concurrent_executions" {
   monitor_thresholds {
     critical = local.thresholds[var.criticality].concurrent_limit
     warning  = local.thresholds[var.criticality].concurrent_warning
+    recovery = local.thresholds[var.criticality].concurrent_recovery
   }
 
   include_tags = true

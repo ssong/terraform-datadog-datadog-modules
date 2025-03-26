@@ -11,44 +11,62 @@ locals {
     low = {
       read_throttle_events       = 50.0
       read_throttle_warning     = 25.0
+      read_throttle_recovery    = 15.0
       write_throttle_events     = 50.0
       write_throttle_warning    = 25.0
+      write_throttle_recovery   = 15.0
       consumed_read_capacity    = 85.0
       consumed_read_warning     = 75.0
+      consumed_read_recovery    = 70.0
       consumed_write_capacity   = 85.0
       consumed_write_warning    = 75.0
+      consumed_write_recovery   = 70.0
       system_errors             = 10.0
       system_errors_warning     = 5.0
+      system_errors_recovery    = 3.0
       conditional_check_failed  = 25.0
       conditional_check_warning = 15.0
+      conditional_check_recovery = 10.0
     }
     medium = {
       read_throttle_events       = 25.0
       read_throttle_warning     = 10.0
+      read_throttle_recovery    = 7.0
       write_throttle_events     = 25.0
       write_throttle_warning    = 10.0
+      write_throttle_recovery   = 7.0
       consumed_read_capacity    = 75.0
       consumed_read_warning     = 65.0
+      consumed_read_recovery    = 60.0
       consumed_write_capacity   = 75.0
       consumed_write_warning    = 65.0
+      consumed_write_recovery   = 60.0
       system_errors             = 5.0
       system_errors_warning     = 2.0
+      system_errors_recovery    = 1.0
       conditional_check_failed  = 15.0
       conditional_check_warning = 7.0
+      conditional_check_recovery = 5.0
     }
     high = {
       read_throttle_events       = 10.0
       read_throttle_warning     = 5.0
+      read_throttle_recovery    = 3.0
       write_throttle_events     = 10.0
       write_throttle_warning    = 5.0
+      write_throttle_recovery   = 3.0
       consumed_read_capacity    = 70.0
       consumed_read_warning     = 60.0
+      consumed_read_recovery    = 55.0
       consumed_write_capacity   = 70.0
       consumed_write_warning    = 60.0
+      consumed_write_recovery   = 55.0
       system_errors             = 2.0
       system_errors_warning     = 1.0
+      system_errors_recovery    = 0.5
       conditional_check_failed  = 10.0
       conditional_check_warning = 5.0
+      conditional_check_recovery = 3.0
     }
   }
 }
@@ -68,6 +86,7 @@ resource "datadog_monitor" "dynamodb_read_throttle_events" {
   monitor_thresholds {
     critical = local.thresholds[var.criticality].read_throttle_events
     warning  = local.thresholds[var.criticality].read_throttle_warning
+    recovery = local.thresholds[var.criticality].read_throttle_recovery
   }
 
   include_tags = true
@@ -91,6 +110,7 @@ resource "datadog_monitor" "dynamodb_write_throttle_events" {
   monitor_thresholds {
     critical = local.thresholds[var.criticality].write_throttle_events
     warning  = local.thresholds[var.criticality].write_throttle_warning
+    recovery = local.thresholds[var.criticality].write_throttle_recovery
   }
 
   include_tags = true
@@ -115,6 +135,7 @@ resource "datadog_monitor" "dynamodb_consumed_read_capacity" {
   monitor_thresholds {
     critical = local.thresholds[var.criticality].consumed_read_capacity
     warning  = local.thresholds[var.criticality].consumed_read_warning
+    recovery = local.thresholds[var.criticality].consumed_read_recovery
   }
 
   include_tags = true
@@ -139,6 +160,7 @@ resource "datadog_monitor" "dynamodb_consumed_write_capacity" {
   monitor_thresholds {
     critical = local.thresholds[var.criticality].consumed_write_capacity
     warning  = local.thresholds[var.criticality].consumed_write_warning
+    recovery = local.thresholds[var.criticality].consumed_write_recovery
   }
 
   include_tags = true
@@ -162,6 +184,7 @@ resource "datadog_monitor" "dynamodb_system_errors" {
   monitor_thresholds {
     critical = local.thresholds[var.criticality].system_errors
     warning  = local.thresholds[var.criticality].system_errors_warning
+    recovery = local.thresholds[var.criticality].system_errors_recovery
   }
 
   include_tags = true
@@ -185,6 +208,7 @@ resource "datadog_monitor" "dynamodb_conditional_check_failed" {
   monitor_thresholds {
     critical = local.thresholds[var.criticality].conditional_check_failed
     warning  = local.thresholds[var.criticality].conditional_check_warning
+    recovery = local.thresholds[var.criticality].conditional_check_recovery
   }
 
   include_tags = true

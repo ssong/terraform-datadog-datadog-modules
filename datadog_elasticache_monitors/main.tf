@@ -14,44 +14,62 @@ locals {
     low = {
       cpu_utilization        = 90.0
       cpu_warning            = 80.0
+      cpu_recovery           = 75.0
       memory_utilization     = 90.0
       memory_warning         = 80.0
+      memory_recovery        = 75.0
       swap_utilization       = 50.0
       swap_warning           = 35.0
+      swap_recovery          = 25.0
       evictions              = 1000.0
       evictions_warning      = 500.0
+      evictions_recovery     = 400.0
       connections            = 90.0
       connections_warning    = 80.0
+      connections_recovery   = 75.0
       replication_lag        = 300.0
       replication_lag_warning = 180.0
+      replication_lag_recovery = 120.0
     }
     medium = {
       cpu_utilization        = 85.0
       cpu_warning            = 75.0
+      cpu_recovery           = 65.0
       memory_utilization     = 85.0
       memory_warning         = 75.0
+      memory_recovery        = 65.0
       swap_utilization       = 35.0
       swap_warning           = 25.0
+      swap_recovery          = 15.0
       evictions              = 500.0
       evictions_warning      = 250.0
+      evictions_recovery     = 200.0
       connections            = 80.0
       connections_warning    = 70.0
+      connections_recovery   = 60.0
       replication_lag        = 180.0
       replication_lag_warning = 90.0
+      replication_lag_recovery = 60.0
     }
     high = {
       cpu_utilization        = 80.0
       cpu_warning            = 70.0
+      cpu_recovery           = 60.0
       memory_utilization     = 80.0
       memory_warning         = 70.0
+      memory_recovery        = 60.0
       swap_utilization       = 25.0
       swap_warning           = 15.0
+      swap_recovery          = 10.0
       evictions              = 250.0
       evictions_warning      = 100.0
+      evictions_recovery     = 75.0
       connections            = 70.0
       connections_warning    = 60.0
+      connections_recovery   = 50.0
       replication_lag        = 60.0
       replication_lag_warning = 30.0
+      replication_lag_recovery = 15.0
     }
   }
 }
@@ -71,6 +89,7 @@ resource "datadog_monitor" "elasticache_cpu_utilization" {
   monitor_thresholds {
     critical = local.thresholds[var.criticality].cpu_utilization
     warning  = local.thresholds[var.criticality].cpu_warning
+    recovery = local.thresholds[var.criticality].cpu_recovery
   }
 
   include_tags = true
@@ -96,6 +115,7 @@ resource "datadog_monitor" "elasticache_memory_utilization" {
   monitor_thresholds {
     critical = local.thresholds[var.criticality].memory_utilization
     warning  = local.thresholds[var.criticality].memory_warning
+    recovery = local.thresholds[var.criticality].memory_recovery
   }
 
   include_tags = true
@@ -119,6 +139,7 @@ resource "datadog_monitor" "elasticache_swap_usage" {
   monitor_thresholds {
     critical = local.thresholds[var.criticality].swap_utilization
     warning  = local.thresholds[var.criticality].swap_warning
+    recovery = local.thresholds[var.criticality].swap_recovery
   }
 
   include_tags = true
@@ -142,6 +163,7 @@ resource "datadog_monitor" "elasticache_evictions" {
   monitor_thresholds {
     critical = local.thresholds[var.criticality].evictions
     warning  = local.thresholds[var.criticality].evictions_warning
+    recovery = local.thresholds[var.criticality].evictions_recovery
   }
 
   include_tags = true
@@ -165,6 +187,7 @@ resource "datadog_monitor" "elasticache_current_connections" {
   monitor_thresholds {
     critical = local.thresholds[var.criticality].connections
     warning  = local.thresholds[var.criticality].connections_warning
+    recovery = local.thresholds[var.criticality].connections_recovery
   }
 
   include_tags = true
@@ -189,6 +212,7 @@ resource "datadog_monitor" "elasticache_replication_lag" {
   monitor_thresholds {
     critical = local.thresholds[var.criticality].replication_lag
     warning  = local.thresholds[var.criticality].replication_lag_warning
+    recovery = local.thresholds[var.criticality].replication_lag_recovery
   }
 
   include_tags = true

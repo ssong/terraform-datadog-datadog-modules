@@ -4,45 +4,63 @@ locals {
     medium = 2
     high   = 1
   }
-  
+
   dashboard_title_prefix = var.create_dashboard ? "${var.dashboard_name_prefix} - API Gateway: ${var.api_gateway_name}" : ""
 
   thresholds = {
     low = {
-      error_rate           = 10.0
-      error_rate_warning   = 5.0
-      latency_p90          = 5000
-      latency_p90_warning  = 3000
-      count_drop           = 50.0
-      count_warning        = 30.0
-      throttles            = 10.0
-      throttles_warning    = 5.0
-      integration_latency  = 3000
-      integration_warning  = 2000
+      error_rate            = 10.0
+      warning_rate          = 5.0
+      error_rate_recovery   = 9.0
+      warning_rate_recovery = 4.0
+      latency_p90           = 5000
+      latency_p90_warning   = 3000
+      latency_p90_recovery  = 2500
+      count_drop            = 50.0
+      count_warning         = 30.0
+      count_recovery        = 25.0
+      throttles             = 10.0
+      throttles_warning     = 5.0
+      throttles_recovery    = 3.0
+      integration_latency   = 3000
+      integration_warning   = 2000
+      integration_recovery  = 1500
     }
     medium = {
-      error_rate           = 5.0
-      error_rate_warning   = 2.0
-      latency_p90          = 3000
-      latency_p90_warning  = 2000
-      count_drop           = 30.0
-      count_warning        = 15.0
-      throttles            = 5.0
-      throttles_warning    = 2.0
-      integration_latency  = 2000
-      integration_warning  = 1000
+      error_rate            = 5.0
+      warning_rate          = 2.0
+      error_rate_recovery   = 4.5
+      warning_rate_recovery = 1.5
+      latency_p90           = 3000
+      latency_p90_warning   = 2000
+      latency_p90_recovery  = 1500
+      count_drop            = 30.0
+      count_warning         = 15.0
+      count_recovery        = 10.0
+      throttles             = 5.0
+      throttles_warning     = 2.0
+      throttles_recovery    = 1.0
+      integration_latency   = 2000
+      integration_warning   = 1000
+      integration_recovery  = 750
     }
     high = {
-      error_rate           = 2.0
-      error_rate_warning   = 1.0
-      latency_p90          = 1000
-      latency_p90_warning  = 800
-      count_drop           = 15.0
-      count_warning        = 10.0
-      throttles            = 2.0
-      throttles_warning    = 1.0
-      integration_latency  = 1000
-      integration_warning  = 500
+      error_rate            = 2.0
+      warning_rate          = 1.0
+      error_rate_recovery   = 1.5
+      warning_rate_recovery = 0.5
+      latency_p90           = 1000
+      latency_p90_warning   = 800
+      latency_p90_recovery  = 600
+      count_drop            = 15.0
+      count_warning         = 10.0
+      count_recovery        = 5.0
+      throttles             = 2.0
+      throttles_warning     = 1.0
+      throttles_recovery    = 0.5
+      integration_latency   = 1000
+      integration_warning   = 500
+      integration_recovery  = 300
     }
   }
 }
@@ -60,8 +78,9 @@ resource "datadog_monitor" "api_gateway_error_rate" {
   query = "sum(${var.evaluation_period}):100 * (sum:aws.apigateway.5xxerror{apiname:${var.api_gateway_name}} + sum:aws.apigateway.4xxerror{apiname:${var.api_gateway_name}}) / sum:aws.apigateway.count{apiname:${var.api_gateway_name}} > ${local.thresholds[var.criticality].error_rate}"
 
   monitor_thresholds {
-    critical = local.thresholds[var.criticality].error_rate
-    warning  = local.thresholds[var.criticality].error_rate_warning
+    critical         = local.thresholds[var.criticality].error_rate
+    warning          = local.thresholds[var.criticality].warning_rate
+    warning_recovery = local.thresholds[var.criticality].warning_rate_recovery
   }
 
   include_tags = true
@@ -83,8 +102,9 @@ resource "datadog_monitor" "api_gateway_latency" {
   query = "avg(${var.evaluation_period}):p90:aws.apigateway.latency{apiname:${var.api_gateway_name}} > ${local.thresholds[var.criticality].latency_p90}"
 
   monitor_thresholds {
-    critical = local.thresholds[var.criticality].latency_p90
-    warning  = local.thresholds[var.criticality].latency_p90_warning
+    critical         = local.thresholds[var.criticality].latency_p90
+    warning          = local.thresholds[var.criticality].latency_p90_warning
+    warning_recovery = local.thresholds[var.criticality].latency_p90_recovery
   }
 
   include_tags = true
@@ -106,13 +126,14 @@ resource "datadog_monitor" "api_gateway_count_drop" {
   query = "pct_change(avg(${var.evaluation_period}),avg(${var.baseline_period})):sum:aws.apigateway.count{apiname:${var.api_gateway_name}} < -${local.thresholds[var.criticality].count_drop}"
 
   monitor_thresholds {
-    critical = -1 * local.thresholds[var.criticality].count_drop
-    warning  = -1 * local.thresholds[var.criticality].count_warning
+    critical         = -1 * local.thresholds[var.criticality].count_drop
+    warning          = -1 * local.thresholds[var.criticality].count_warning
+    warning_recovery = -1 * local.thresholds[var.criticality].count_recovery
   }
 
   include_tags = true
   tags         = concat(var.tags, ["api_gateway:${var.api_gateway_name}", "managed_by:terraform"])
-  
+
   priority = local.priorities[var.criticality]
 }
 
@@ -129,13 +150,14 @@ resource "datadog_monitor" "api_gateway_throttles" {
   query = "sum(${var.evaluation_period}):sum:aws.apigateway.throttlecount{apiname:${var.api_gateway_name}} > ${local.thresholds[var.criticality].throttles}"
 
   monitor_thresholds {
-    critical = local.thresholds[var.criticality].throttles
-    warning  = local.thresholds[var.criticality].throttles_warning
+    critical         = local.thresholds[var.criticality].throttles
+    warning          = local.thresholds[var.criticality].throttles_warning
+    warning_recovery = local.thresholds[var.criticality].throttles_recovery
   }
 
   include_tags = true
   tags         = concat(var.tags, ["api_gateway:${var.api_gateway_name}", "managed_by:terraform"])
-  
+
   priority = local.priorities[var.criticality]
 }
 
@@ -152,13 +174,14 @@ resource "datadog_monitor" "api_gateway_integration_latency" {
   query = "avg(${var.evaluation_period}):avg:aws.apigateway.integration_latency{apiname:${var.api_gateway_name}} > ${local.thresholds[var.criticality].integration_latency}"
 
   monitor_thresholds {
-    critical = local.thresholds[var.criticality].integration_latency
-    warning  = local.thresholds[var.criticality].integration_warning
+    critical         = local.thresholds[var.criticality].integration_latency
+    warning          = local.thresholds[var.criticality].integration_warning
+    warning_recovery = local.thresholds[var.criticality].integration_recovery
   }
 
   include_tags = true
   tags         = concat(var.tags, ["api_gateway:${var.api_gateway_name}", "managed_by:terraform"])
-  
+
   priority = local.priorities[var.criticality]
 }
 
@@ -168,7 +191,7 @@ resource "datadog_dashboard" "api_gateway_dashboard" {
   title       = local.dashboard_title_prefix
   description = "Dashboard for API Gateway ${var.api_gateway_name}"
   layout_type = "ordered"
-  
+
   widget {
     timeseries_definition {
       title = "Request Count"
@@ -185,7 +208,7 @@ resource "datadog_dashboard" "api_gateway_dashboard" {
       }
     }
   }
-  
+
   widget {
     timeseries_definition {
       title = "Latency (p50, p90, p99)"
@@ -212,12 +235,12 @@ resource "datadog_dashboard" "api_gateway_dashboard" {
       }
       marker {
         display_type = "error dashed"
-        value        = "${local.thresholds[var.criticality].latency_p90}"
+        value        = local.thresholds[var.criticality].latency_p90
         label        = "Critical"
       }
       marker {
         display_type = "warning dashed"
-        value        = "${local.thresholds[var.criticality].latency_p90_warning}"
+        value        = local.thresholds[var.criticality].latency_p90_warning
         label        = "Warning"
       }
       yaxis {
@@ -226,7 +249,7 @@ resource "datadog_dashboard" "api_gateway_dashboard" {
       }
     }
   }
-  
+
   widget {
     timeseries_definition {
       title = "Integration Latency"
@@ -239,12 +262,12 @@ resource "datadog_dashboard" "api_gateway_dashboard" {
       }
       marker {
         display_type = "error dashed"
-        value        = "${local.thresholds[var.criticality].integration_latency}"
+        value        = local.thresholds[var.criticality].integration_latency
         label        = "Critical"
       }
       marker {
         display_type = "warning dashed"
-        value        = "${local.thresholds[var.criticality].integration_warning}"
+        value        = local.thresholds[var.criticality].integration_warning
         label        = "Warning"
       }
       yaxis {
@@ -253,7 +276,7 @@ resource "datadog_dashboard" "api_gateway_dashboard" {
       }
     }
   }
-  
+
   widget {
     timeseries_definition {
       title = "Error Rate (%) - 4xx/5xx"
@@ -266,12 +289,12 @@ resource "datadog_dashboard" "api_gateway_dashboard" {
       }
       marker {
         display_type = "error dashed"
-        value        = "${local.thresholds[var.criticality].error_rate}"
+        value        = local.thresholds[var.criticality].error_rate
         label        = "Critical"
       }
       marker {
         display_type = "warning dashed"
-        value        = "${local.thresholds[var.criticality].error_rate_warning}"
+        value        = local.thresholds[var.criticality].warning_rate
         label        = "Warning"
       }
       yaxis {
@@ -281,7 +304,7 @@ resource "datadog_dashboard" "api_gateway_dashboard" {
       }
     }
   }
-  
+
   widget {
     timeseries_definition {
       title = "4xx vs 5xx Errors"
@@ -307,7 +330,7 @@ resource "datadog_dashboard" "api_gateway_dashboard" {
       }
     }
   }
-  
+
   widget {
     timeseries_definition {
       title = "Throttle Count"
@@ -320,12 +343,12 @@ resource "datadog_dashboard" "api_gateway_dashboard" {
       }
       marker {
         display_type = "error dashed"
-        value        = "${local.thresholds[var.criticality].throttles}"
+        value        = local.thresholds[var.criticality].throttles
         label        = "Critical"
       }
       marker {
         display_type = "warning dashed"
-        value        = "${local.thresholds[var.criticality].throttles_warning}"
+        value        = local.thresholds[var.criticality].throttles_warning
         label        = "Warning"
       }
       yaxis {
@@ -334,21 +357,21 @@ resource "datadog_dashboard" "api_gateway_dashboard" {
       }
     }
   }
-  
+
   template_variable {
-    name    = "apigateway"
-    prefix  = "apiname"
+    name     = "apigateway"
+    prefix   = "apiname"
     defaults = [var.api_gateway_name]
   }
-  
+
   template_variable_preset {
     name = "Default"
-    
+
     template_variable {
-      name  = "apigateway"
+      name   = "apigateway"
       values = [var.api_gateway_name]
     }
   }
-  
+
   tags = concat(var.tags, ["api_gateway:${var.api_gateway_name}", "managed_by:terraform"])
 }

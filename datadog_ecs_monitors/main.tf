@@ -11,38 +11,53 @@ locals {
     low = {
       cpu_utilization         = 90.0
       cpu_warning             = 80.0
+      cpu_recovery            = 75.0
       memory_utilization      = 90.0
       memory_warning          = 80.0
+      memory_recovery         = 75.0
       task_count_deviation    = 30.0
       task_deviation_warning  = 20.0
+      task_deviation_recovery = 15.0
       service_failures        = 5
       service_failures_warning = 3
+      service_failures_recovery = 2
       container_restarts      = 5
       container_restarts_warning = 3
+      container_restarts_recovery = 2
     }
     medium = {
       cpu_utilization         = 85.0
       cpu_warning             = 75.0
+      cpu_recovery            = 65.0
       memory_utilization      = 85.0
       memory_warning          = 75.0
+      memory_recovery         = 65.0
       task_count_deviation    = 20.0
       task_deviation_warning  = 10.0
+      task_deviation_recovery = 7.0
       service_failures        = 3
       service_failures_warning = 2
+      service_failures_recovery = 1
       container_restarts      = 3
       container_restarts_warning = 2
+      container_restarts_recovery = 1
     }
     high = {
       cpu_utilization         = 80.0
       cpu_warning             = 70.0
+      cpu_recovery            = 60.0
       memory_utilization      = 80.0
       memory_warning          = 70.0
+      memory_recovery         = 60.0
       task_count_deviation    = 10.0
       task_deviation_warning  = 5.0
+      task_deviation_recovery = 3.0
       service_failures        = 2
       service_failures_warning = 1
+      service_failures_recovery = 0
       container_restarts      = 2
       container_restarts_warning = 1
+      container_restarts_recovery = 0
     }
   }
 }
@@ -62,6 +77,7 @@ resource "datadog_monitor" "ecs_cpu_utilization" {
   monitor_thresholds {
     critical = local.thresholds[var.criticality].cpu_utilization
     warning  = local.thresholds[var.criticality].cpu_warning
+    recovery = local.thresholds[var.criticality].cpu_recovery
   }
 
   include_tags = true
@@ -85,6 +101,7 @@ resource "datadog_monitor" "ecs_memory_utilization" {
   monitor_thresholds {
     critical = local.thresholds[var.criticality].memory_utilization
     warning  = local.thresholds[var.criticality].memory_warning
+    recovery = local.thresholds[var.criticality].memory_recovery
   }
 
   include_tags = true
@@ -108,6 +125,7 @@ resource "datadog_monitor" "ecs_task_count_deviation" {
   monitor_thresholds {
     critical = local.thresholds[var.criticality].task_count_deviation
     warning  = local.thresholds[var.criticality].task_deviation_warning
+    recovery = local.thresholds[var.criticality].task_deviation_recovery
   }
 
   include_tags = true
@@ -131,6 +149,7 @@ resource "datadog_monitor" "ecs_service_failures" {
   monitor_thresholds {
     critical = local.thresholds[var.criticality].service_failures
     warning  = local.thresholds[var.criticality].service_failures_warning
+    recovery = local.thresholds[var.criticality].service_failures_recovery
   }
 
   include_tags = true
@@ -154,6 +173,7 @@ resource "datadog_monitor" "ecs_container_restarts" {
   monitor_thresholds {
     critical = local.thresholds[var.criticality].container_restarts
     warning  = local.thresholds[var.criticality].container_restarts_warning
+    recovery = local.thresholds[var.criticality].container_restarts_recovery
   }
 
   include_tags = true

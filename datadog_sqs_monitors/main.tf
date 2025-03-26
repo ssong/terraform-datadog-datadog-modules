@@ -11,38 +11,53 @@ locals {
     low = {
       age_max               = 3600
       age_warning           = 1800
+      age_recovery          = 1500
       approximate_count     = 10000
       approximate_warning   = 5000
+      approximate_recovery  = 4000
       no_messages           = 180
       no_messages_warning   = 120
+      no_messages_recovery  = 90
       error_rate            = 10.0
       error_rate_warning    = 5.0
+      error_rate_recovery   = 4.0
       throughput_drop       = 50.0
       throughput_warning    = 30.0
+      throughput_recovery   = 25.0
     }
     medium = {
       age_max               = 1800
       age_warning           = 900
+      age_recovery          = 700
       approximate_count     = 5000
       approximate_warning   = 3000
+      approximate_recovery  = 2000
       no_messages           = 120
       no_messages_warning   = 60
+      no_messages_recovery  = 40
       error_rate            = 5.0
       error_rate_warning    = 2.0
+      error_rate_recovery   = 1.5
       throughput_drop       = 30.0
       throughput_warning    = 15.0
+      throughput_recovery   = 10.0
     }
     high = {
       age_max               = 900
       age_warning           = 600
+      age_recovery          = 400
       approximate_count     = 2000
       approximate_warning   = 1000
+      approximate_recovery  = 600
       no_messages           = 60
       no_messages_warning   = 30
+      no_messages_recovery  = 15
       error_rate            = 2.0
       error_rate_warning    = 1.0
+      error_rate_recovery   = 0.5
       throughput_drop       = 15.0
       throughput_warning    = 10.0
+      throughput_recovery   = 5.0
     }
   }
 }
@@ -62,6 +77,7 @@ resource "datadog_monitor" "sqs_age_max" {
   monitor_thresholds {
     critical = local.thresholds[var.criticality].age_max
     warning  = local.thresholds[var.criticality].age_warning
+    recovery = local.thresholds[var.criticality].age_recovery
   }
 
   include_tags = true
@@ -85,6 +101,7 @@ resource "datadog_monitor" "sqs_approximate_count" {
   monitor_thresholds {
     critical = local.thresholds[var.criticality].approximate_count
     warning  = local.thresholds[var.criticality].approximate_warning
+    recovery = local.thresholds[var.criticality].approximate_recovery
   }
 
   include_tags = true
@@ -107,7 +124,7 @@ resource "datadog_monitor" "sqs_no_messages" {
 
   monitor_threshold_windows {
     trigger_window  = "${local.thresholds[var.criticality].no_messages}m"
-    recovery_window = "${local.thresholds[var.criticality].no_messages_warning}m"
+    recovery_window = "${local.thresholds[var.criticality].no_messages_recovery}m"
   }
 
   include_tags = true
@@ -131,6 +148,7 @@ resource "datadog_monitor" "sqs_error_rate" {
   monitor_thresholds {
     critical = local.thresholds[var.criticality].error_rate
     warning  = local.thresholds[var.criticality].error_rate_warning
+    recovery = local.thresholds[var.criticality].error_rate_recovery
   }
 
   include_tags = true
@@ -154,6 +172,7 @@ resource "datadog_monitor" "sqs_throughput_drop" {
   monitor_thresholds {
     critical = -1 * local.thresholds[var.criticality].throughput_drop
     warning  = -1 * local.thresholds[var.criticality].throughput_warning
+    recovery = -1 * local.thresholds[var.criticality].throughput_recovery
   }
 
   include_tags = true
