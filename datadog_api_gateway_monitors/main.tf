@@ -373,5 +373,5 @@ resource "datadog_dashboard" "api_gateway_dashboard" {
     }
   }
 
-  tags = concat(var.tags, ["api_gateway:${var.api_gateway_name}", "managed_by:terraform", "team:${var.team}"])
+  tags = concat(var.tags, ["team:${var.team}"])
 }
