@@ -5,7 +5,8 @@ provider "datadog" {
 
 # Lambda Monitors Examples
 module "api_lambda_monitors" {
-  source = "../datadog_lambda_monitors"
+  source = "ssong/datadog-modules/datadog//datadog_lambda_monitors"
+  version = "1.0.0"
 
   lambda_function_name       = "api-gateway-lambda-function"
   criticality                = "high"
@@ -16,7 +17,8 @@ module "api_lambda_monitors" {
 }
 
 module "batch_processing_lambda_monitors" {
-  source = "../datadog_lambda_monitors"
+  source = "ssong/datadog-modules/datadog//datadog_lambda_monitors"
+  version = "1.0.0"
 
   lambda_function_name = "batch-processing-function"
   criticality          = "medium"
@@ -26,7 +28,8 @@ module "batch_processing_lambda_monitors" {
 }
 
 module "reporting_lambda_monitors" {
-  source = "../datadog_lambda_monitors"
+  source = "ssong/datadog-modules/datadog//datadog_lambda_monitors"
+  version = "1.0.0"
 
   lambda_function_name = "weekly-reporting-function"
   criticality          = "low"
@@ -38,7 +41,8 @@ module "reporting_lambda_monitors" {
 
 # API Gateway Monitors Examples
 module "main_api_gateway_monitors" {
-  source = "../datadog_api_gateway_monitors"
+  source = "ssong/datadog-modules/datadog//datadog_api_gateway_monitors"
+  version = "1.0.0"
 
   api_gateway_name    = "main-api-gateway"
   criticality         = "high"
@@ -48,7 +52,8 @@ module "main_api_gateway_monitors" {
 }
 
 module "internal_api_gateway_monitors" {
-  source = "../datadog_api_gateway_monitors"
+  source = "ssong/datadog-modules/datadog//datadog_api_gateway_monitors"
+  version = "1.0.0"
 
   api_gateway_name    = "internal-api-gateway"
   criticality         = "medium"
@@ -58,7 +63,8 @@ module "internal_api_gateway_monitors" {
 }
 
 module "test_api_gateway_monitors" {
-  source = "../datadog_api_gateway_monitors"
+  source = "ssong/datadog-modules/datadog//datadog_api_gateway_monitors"
+  version = "1.0.0"
 
   api_gateway_name    = "test-api-gateway"
   criticality         = "low"
@@ -70,7 +76,8 @@ module "test_api_gateway_monitors" {
 
 # SQS Monitors Examples
 module "payment_sqs_monitors" {
-  source = "../datadog_sqs_monitors"
+  source = "ssong/datadog-modules/datadog//datadog_sqs_monitors"
+  version = "1.0.0"
 
   queue_name          = "payment-processing-queue"
   criticality         = "high"
@@ -80,7 +87,8 @@ module "payment_sqs_monitors" {
 }
 
 module "inventory_sqs_monitors" {
-  source = "../datadog_sqs_monitors"
+  source = "ssong/datadog-modules/datadog//datadog_sqs_monitors"
+  version = "1.0.0"
 
   queue_name          = "inventory-updates-queue"
   criticality         = "medium"
@@ -90,7 +98,8 @@ module "inventory_sqs_monitors" {
 }
 
 module "notification_sqs_monitors" {
-  source = "../datadog_sqs_monitors"
+  source = "ssong/datadog-modules/datadog//datadog_sqs_monitors"
+  version = "1.0.0"
 
   queue_name          = "user-notifications-queue"
   criticality         = "low"
@@ -101,7 +110,8 @@ module "notification_sqs_monitors" {
 
 # ECS Monitors Examples
 module "api_ecs_monitors" {
-  source = "../datadog_ecs_monitors"
+  source = "ssong/datadog-modules/datadog//datadog_ecs_monitors"
+  version = "1.0.0"
 
   cluster_name        = "main-api-cluster"
   service_name        = "api-service"
@@ -112,7 +122,8 @@ module "api_ecs_monitors" {
 }
 
 module "worker_ecs_monitors" {
-  source = "../datadog_ecs_monitors"
+  source = "ssong/datadog-modules/datadog//datadog_ecs_monitors"
+  version = "1.0.0"
 
   cluster_name        = "worker-cluster"
   service_name        = "batch-processor"
@@ -123,7 +134,8 @@ module "worker_ecs_monitors" {
 }
 
 module "reporting_ecs_monitors" {
-  source = "../datadog_ecs_monitors"
+  source = "ssong/datadog-modules/datadog//datadog_ecs_monitors"
+  version = "1.0.0"
 
   cluster_name        = "reporting-cluster"
   service_name        = "report-generator"
@@ -135,7 +147,8 @@ module "reporting_ecs_monitors" {
 
 # RDS Monitors Examples
 module "production_db_monitors" {
-  source = "../datadog_rds_monitors"
+  source = "ssong/datadog-modules/datadog//datadog_rds_monitors"
+  version = "1.0.0"
 
   db_instance_identifier = "production-db-instance"
   criticality            = "high"
@@ -146,7 +159,8 @@ module "production_db_monitors" {
 }
 
 module "replica_db_monitors" {
-  source = "../datadog_rds_monitors"
+  source = "ssong/datadog-modules/datadog//datadog_rds_monitors"
+  version = "1.0.0"
 
   db_instance_identifier = "production-read-replica"
   criticality            = "medium"
@@ -157,7 +171,8 @@ module "replica_db_monitors" {
 }
 
 module "dev_db_monitors" {
-  source = "../datadog_rds_monitors"
+  source = "ssong/datadog-modules/datadog//datadog_rds_monitors"
+  version = "1.0.0"
 
   db_instance_identifier = "development-db-instance"
   criticality            = "low"
@@ -168,7 +183,8 @@ module "dev_db_monitors" {
 
 # DynamoDB Monitors Examples
 module "user_table_monitors" {
-  source = "../datadog_dynamodb_monitors"
+  source = "ssong/datadog-modules/datadog//datadog_dynamodb_monitors"
+  version = "1.0.0"
 
   table_name           = "user-profiles-table"
   criticality          = "high"
@@ -181,7 +197,8 @@ module "user_table_monitors" {
 }
 
 module "session_table_monitors" {
-  source = "../datadog_dynamodb_monitors"
+  source = "ssong/datadog-modules/datadog//datadog_dynamodb_monitors"
+  version = "1.0.0"
 
   table_name           = "session-data-table"
   criticality          = "medium"
@@ -192,7 +209,8 @@ module "session_table_monitors" {
 }
 
 module "analytics_table_monitors" {
-  source = "../datadog_dynamodb_monitors"
+  source = "ssong/datadog-modules/datadog//datadog_dynamodb_monitors"
+  version = "1.0.0"
 
   table_name          = "analytics-events-table"
   criticality         = "low"
@@ -203,7 +221,8 @@ module "analytics_table_monitors" {
 
 # ElastiCache Monitors Examples
 module "redis_cache_monitors" {
-  source = "../datadog_elasticache_monitors"
+  source = "ssong/datadog-modules/datadog//datadog_elasticache_monitors"
+  version = "1.0.0"
 
   cache_cluster_id    = "production-redis-cluster"
   cache_type          = "redis"
@@ -215,7 +234,8 @@ module "redis_cache_monitors" {
 }
 
 module "redis_replica_monitors" {
-  source = "../datadog_elasticache_monitors"
+  source = "ssong/datadog-modules/datadog//datadog_elasticache_monitors"
+  version = "1.0.0"
 
   cache_cluster_id    = "production-redis-replica"
   cache_type          = "redis"
@@ -227,7 +247,8 @@ module "redis_replica_monitors" {
 }
 
 module "memcached_cache_monitors" {
-  source = "../datadog_elasticache_monitors"
+  source = "ssong/datadog-modules/datadog//datadog_elasticache_monitors"
+  version = "1.0.0"
 
   cache_cluster_id    = "session-memcached-cluster"
   cache_type          = "memcached"
