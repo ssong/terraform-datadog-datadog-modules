@@ -84,9 +84,9 @@ resource "datadog_monitor" "dynamodb_read_throttle_events" {
   query = "avg(${var.evaluation_period}):avg:aws.dynamodb.read_throttle_events{tablename:${var.table_name}} > ${local.thresholds[var.criticality].read_throttle_events}"
 
   monitor_thresholds {
-    critical = local.thresholds[var.criticality].read_throttle_events
-    warning  = local.thresholds[var.criticality].read_throttle_warning
-    recovery = local.thresholds[var.criticality].read_throttle_recovery
+    critical          = local.thresholds[var.criticality].read_throttle_events
+    warning           = local.thresholds[var.criticality].read_throttle_warning
+    critical_recovery = local.thresholds[var.criticality].read_throttle_recovery
   }
 
   include_tags = true
@@ -108,9 +108,9 @@ resource "datadog_monitor" "dynamodb_write_throttle_events" {
   query = "avg(${var.evaluation_period}):avg:aws.dynamodb.write_throttle_events{tablename:${var.table_name}} > ${local.thresholds[var.criticality].write_throttle_events}"
 
   monitor_thresholds {
-    critical = local.thresholds[var.criticality].write_throttle_events
-    warning  = local.thresholds[var.criticality].write_throttle_warning
-    recovery = local.thresholds[var.criticality].write_throttle_recovery
+    critical          = local.thresholds[var.criticality].write_throttle_events
+    warning           = local.thresholds[var.criticality].write_throttle_warning
+    critical_recovery = local.thresholds[var.criticality].write_throttle_recovery
   }
 
   include_tags = true
@@ -133,9 +133,9 @@ resource "datadog_monitor" "dynamodb_consumed_read_capacity" {
   query = "avg(${var.evaluation_period}):avg:aws.dynamodb.consumed_read_capacity_units{tablename:${var.table_name}} / ${var.read_capacity_units} * 100 > ${local.thresholds[var.criticality].consumed_read_capacity}"
 
   monitor_thresholds {
-    critical = local.thresholds[var.criticality].consumed_read_capacity
-    warning  = local.thresholds[var.criticality].consumed_read_warning
-    recovery = local.thresholds[var.criticality].consumed_read_recovery
+    critical          = local.thresholds[var.criticality].consumed_read_capacity
+    warning           = local.thresholds[var.criticality].consumed_read_warning
+    critical_recovery = local.thresholds[var.criticality].consumed_read_recovery
   }
 
   include_tags = true
@@ -158,9 +158,9 @@ resource "datadog_monitor" "dynamodb_consumed_write_capacity" {
   query = "avg(${var.evaluation_period}):avg:aws.dynamodb.consumed_write_capacity_units{tablename:${var.table_name}} / ${var.write_capacity_units} * 100 > ${local.thresholds[var.criticality].consumed_write_capacity}"
 
   monitor_thresholds {
-    critical = local.thresholds[var.criticality].consumed_write_capacity
-    warning  = local.thresholds[var.criticality].consumed_write_warning
-    recovery = local.thresholds[var.criticality].consumed_write_recovery
+    critical          = local.thresholds[var.criticality].consumed_write_capacity
+    warning           = local.thresholds[var.criticality].consumed_write_warning
+    critical_recovery = local.thresholds[var.criticality].consumed_write_recovery
   }
 
   include_tags = true
@@ -182,9 +182,9 @@ resource "datadog_monitor" "dynamodb_system_errors" {
   query = "avg(${var.evaluation_period}):avg:aws.dynamodb.system_errors{tablename:${var.table_name}} > ${local.thresholds[var.criticality].system_errors}"
 
   monitor_thresholds {
-    critical = local.thresholds[var.criticality].system_errors
-    warning  = local.thresholds[var.criticality].system_errors_warning
-    recovery = local.thresholds[var.criticality].system_errors_recovery
+    critical          = local.thresholds[var.criticality].system_errors
+    warning           = local.thresholds[var.criticality].system_errors_warning
+    critical_recovery = local.thresholds[var.criticality].system_errors_recovery
   }
 
   include_tags = true
@@ -206,9 +206,9 @@ resource "datadog_monitor" "dynamodb_conditional_check_failed" {
   query = "avg(${var.evaluation_period}):avg:aws.dynamodb.conditional_check_failed_requests{tablename:${var.table_name}} > ${local.thresholds[var.criticality].conditional_check_failed}"
 
   monitor_thresholds {
-    critical = local.thresholds[var.criticality].conditional_check_failed
-    warning  = local.thresholds[var.criticality].conditional_check_warning
-    recovery = local.thresholds[var.criticality].conditional_check_recovery
+    critical          = local.thresholds[var.criticality].conditional_check_failed
+    warning           = local.thresholds[var.criticality].conditional_check_warning
+    critical_recovery = local.thresholds[var.criticality].conditional_check_recovery
   }
 
   include_tags = true
@@ -229,13 +229,15 @@ resource "datadog_dashboard" "dynamodb_dashboard" {
       title = "Read Throttle Events"
       request {
         display_type = "line"
-        formulas {
-          formula = "query0"
+        formula {
+          formula_expression = "query0"
         }
-        queries {
-          name        = "query0"
-          query       = "avg:aws.dynamodb.read_throttle_events{tablename:${var.table_name}}"
-          data_source = "metrics"
+        query {
+          metric_query {
+            name        = "query0"
+            query       = "avg:aws.dynamodb.read_throttle_events{tablename:${var.table_name}}"
+            data_source = "metrics"
+          }
         }
       }
       marker {
@@ -260,13 +262,15 @@ resource "datadog_dashboard" "dynamodb_dashboard" {
       title = "Write Throttle Events"
       request {
         display_type = "line"
-        formulas {
-          formula = "query0"
+        formula {
+          formula_expression = "query0"
         }
-        queries {
-          name        = "query0"
-          query       = "avg:aws.dynamodb.write_throttle_events{tablename:${var.table_name}}"
-          data_source = "metrics"
+        query {
+          metric_query {
+            name        = "query0"
+            query       = "avg:aws.dynamodb.write_throttle_events{tablename:${var.table_name}}"
+            data_source = "metrics"
+          }
         }
       }
       marker {
@@ -291,14 +295,16 @@ resource "datadog_dashboard" "dynamodb_dashboard" {
       title = "Consumed Read Capacity Units"
       request {
         display_type = "line"
-        formulas {
-          formula = "query0"
-          alias   = "Consumed RCU"
+        formula {
+          formula_expression = "query0"
+          alias              = "Consumed RCU"
         }
-        queries {
-          name        = "query0"
-          query       = "avg:aws.dynamodb.consumed_read_capacity_units{tablename:${var.table_name}}"
-          data_source = "metrics"
+        query {
+          metric_query {
+            name        = "query0"
+            query       = "avg:aws.dynamodb.consumed_read_capacity_units{tablename:${var.table_name}}"
+            data_source = "metrics"
+          }
         }
       }
       yaxis {
@@ -313,14 +319,16 @@ resource "datadog_dashboard" "dynamodb_dashboard" {
       title = "Consumed Write Capacity Units"
       request {
         display_type = "line"
-        formulas {
-          formula = "query0"
-          alias   = "Consumed WCU"
+        formula {
+          formula_expression = "query0"
+          alias              = "Consumed WCU"
         }
-        queries {
-          name        = "query0"
-          query       = "avg:aws.dynamodb.consumed_write_capacity_units{tablename:${var.table_name}}"
-          data_source = "metrics"
+        query {
+          metric_query {
+            name        = "query0"
+            query       = "avg:aws.dynamodb.consumed_write_capacity_units{tablename:${var.table_name}}"
+            data_source = "metrics"
+          }
         }
       }
       yaxis {
@@ -335,13 +343,15 @@ resource "datadog_dashboard" "dynamodb_dashboard" {
       title = "System Errors"
       request {
         display_type = "line"
-        formulas {
-          formula = "query0"
+        formula {
+          formula_expression = "query0"
         }
-        queries {
-          name        = "query0"
-          query       = "avg:aws.dynamodb.system_errors{tablename:${var.table_name}}"
-          data_source = "metrics"
+        query {
+          metric_query {
+            name        = "query0"
+            query       = "avg:aws.dynamodb.system_errors{tablename:${var.table_name}}"
+            data_source = "metrics"
+          }
         }
       }
       marker {
@@ -366,13 +376,15 @@ resource "datadog_dashboard" "dynamodb_dashboard" {
       title = "Conditional Check Failed Requests"
       request {
         display_type = "line"
-        formulas {
-          formula = "query0"
+        formula {
+          formula_expression = "query0"
         }
-        queries {
-          name        = "query0"
-          query       = "avg:aws.dynamodb.conditional_check_failed_requests{tablename:${var.table_name}}"
-          data_source = "metrics"
+        query {
+          metric_query {
+            name        = "query0"
+            query       = "avg:aws.dynamodb.conditional_check_failed_requests{tablename:${var.table_name}}"
+            data_source = "metrics"
+          }
         }
       }
       marker {

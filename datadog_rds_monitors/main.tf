@@ -84,9 +84,9 @@ resource "datadog_monitor" "rds_cpu_utilization" {
   query = "avg(${var.evaluation_period}):avg:aws.rds.cpuutilization{dbinstanceidentifier:${var.db_instance_identifier}} > ${local.thresholds[var.criticality].cpu_utilization}"
 
   monitor_thresholds {
-    critical = local.thresholds[var.criticality].cpu_utilization
-    warning  = local.thresholds[var.criticality].cpu_warning
-    recovery = local.thresholds[var.criticality].cpu_recovery
+    critical          = local.thresholds[var.criticality].cpu_utilization
+    warning           = local.thresholds[var.criticality].cpu_warning
+    critical_recovery = local.thresholds[var.criticality].cpu_recovery
   }
 
   include_tags = true
@@ -108,9 +108,9 @@ resource "datadog_monitor" "rds_memory_utilization" {
   query = "avg(${var.evaluation_period}):avg:aws.rds.freeable_memory{dbinstanceidentifier:${var.db_instance_identifier}} / avg:aws.rds.total_memory{dbinstanceidentifier:${var.db_instance_identifier}} * 100 < (100 - ${local.thresholds[var.criticality].memory_utilization})"
 
   monitor_thresholds {
-    critical = 100 - local.thresholds[var.criticality].memory_utilization
-    warning  = 100 - local.thresholds[var.criticality].memory_warning
-    recovery = 100 - local.thresholds[var.criticality].memory_recovery
+    critical          = 100 - local.thresholds[var.criticality].memory_utilization
+    warning           = 100 - local.thresholds[var.criticality].memory_warning
+    critical_recovery = 100 - local.thresholds[var.criticality].memory_recovery
   }
 
   include_tags = true
@@ -132,9 +132,9 @@ resource "datadog_monitor" "rds_disk_queue_depth" {
   query = "avg(${var.evaluation_period}):avg:aws.rds.disk_queue_depth{dbinstanceidentifier:${var.db_instance_identifier}} > ${local.thresholds[var.criticality].disk_queue_depth}"
 
   monitor_thresholds {
-    critical = local.thresholds[var.criticality].disk_queue_depth
-    warning  = local.thresholds[var.criticality].disk_queue_warning
-    recovery = local.thresholds[var.criticality].disk_queue_recovery
+    critical          = local.thresholds[var.criticality].disk_queue_depth
+    warning           = local.thresholds[var.criticality].disk_queue_warning
+    critical_recovery = local.thresholds[var.criticality].disk_queue_recovery
   }
 
   include_tags = true
@@ -156,9 +156,9 @@ resource "datadog_monitor" "rds_free_storage_space" {
   query = "avg(${var.evaluation_period}):avg:aws.rds.free_storage_space{dbinstanceidentifier:${var.db_instance_identifier}} / avg:aws.rds.total_storage_space{dbinstanceidentifier:${var.db_instance_identifier}} * 100 < ${local.thresholds[var.criticality].disk_free_storage}"
 
   monitor_thresholds {
-    critical = local.thresholds[var.criticality].disk_free_storage
-    warning  = local.thresholds[var.criticality].disk_free_warning
-    recovery = local.thresholds[var.criticality].disk_free_recovery
+    critical          = local.thresholds[var.criticality].disk_free_storage
+    warning           = local.thresholds[var.criticality].disk_free_warning
+    critical_recovery = local.thresholds[var.criticality].disk_free_recovery
   }
 
   include_tags = true
@@ -180,9 +180,9 @@ resource "datadog_monitor" "rds_connection_count" {
   query = "avg(${var.evaluation_period}):avg:aws.rds.database_connections{dbinstanceidentifier:${var.db_instance_identifier}} / ${var.max_connections} * 100 > ${local.thresholds[var.criticality].connection_count}"
 
   monitor_thresholds {
-    critical = local.thresholds[var.criticality].connection_count
-    warning  = local.thresholds[var.criticality].connection_warning
-    recovery = local.thresholds[var.criticality].connection_recovery
+    critical          = local.thresholds[var.criticality].connection_count
+    warning           = local.thresholds[var.criticality].connection_warning
+    critical_recovery = local.thresholds[var.criticality].connection_recovery
   }
 
   include_tags = true
@@ -205,9 +205,9 @@ resource "datadog_monitor" "rds_replica_lag" {
   query = "avg(${var.evaluation_period}):avg:aws.rds.replica_lag{dbinstanceidentifier:${var.db_instance_identifier}} > ${local.thresholds[var.criticality].replica_lag}"
 
   monitor_thresholds {
-    critical = local.thresholds[var.criticality].replica_lag
-    warning  = local.thresholds[var.criticality].replica_lag_warning
-    recovery = local.thresholds[var.criticality].replica_lag_recovery
+    critical          = local.thresholds[var.criticality].replica_lag
+    warning           = local.thresholds[var.criticality].replica_lag_warning
+    critical_recovery = local.thresholds[var.criticality].replica_lag_recovery
   }
 
   include_tags = true
@@ -228,13 +228,15 @@ resource "datadog_dashboard" "rds_dashboard" {
       title = "CPU Utilization (%)"
       request {
         display_type = "line"
-        formulas {
-          formula = "query0"
+        formula {
+          formula_expression = "query0"
         }
-        queries {
-          name        = "query0"
-          query       = "avg:aws.rds.cpuutilization{dbinstanceidentifier:${var.db_instance_identifier}}"
-          data_source = "metrics"
+        query {
+          metric_query {
+            name        = "query0"
+            query       = "avg:aws.rds.cpuutilization{dbinstanceidentifier:${var.db_instance_identifier}}"
+            data_source = "metrics"
+          }
         }
       }
       marker {
@@ -260,19 +262,23 @@ resource "datadog_dashboard" "rds_dashboard" {
       title = "Memory Utilization (%)"
       request {
         display_type = "line"
-        formulas {
-          formula = "100 - (query0 / query1 * 100)"
-          alias   = "Memory Utilization %"
+        formula {
+          formula_expression = "100 - (query0 / query1 * 100)"
+          alias              = "Memory Utilization %"
         }
-        queries {
-          name        = "query0"
-          query       = "avg:aws.rds.freeable_memory{dbinstanceidentifier:${var.db_instance_identifier}}"
-          data_source = "metrics"
+        query {
+          metric_query {
+            name        = "query0"
+            query       = "avg:aws.rds.freeable_memory{dbinstanceidentifier:${var.db_instance_identifier}}"
+            data_source = "metrics"
+          }
         }
-        queries {
-          name        = "query1"
-          query       = "avg:aws.rds.total_memory{dbinstanceidentifier:${var.db_instance_identifier}}"
-          data_source = "metrics"
+        query {
+          metric_query {
+            name        = "query1"
+            query       = "avg:aws.rds.total_memory{dbinstanceidentifier:${var.db_instance_identifier}}"
+            data_source = "metrics"
+          }
         }
       }
       marker {
@@ -298,13 +304,15 @@ resource "datadog_dashboard" "rds_dashboard" {
       title = "Disk Queue Depth"
       request {
         display_type = "line"
-        formulas {
-          formula = "query0"
+        formula {
+          formula_expression = "query0"
         }
-        queries {
-          name        = "query0"
-          query       = "avg:aws.rds.disk_queue_depth{dbinstanceidentifier:${var.db_instance_identifier}}"
-          data_source = "metrics"
+        query {
+          metric_query {
+            name        = "query0"
+            query       = "avg:aws.rds.disk_queue_depth{dbinstanceidentifier:${var.db_instance_identifier}}"
+            data_source = "metrics"
+          }
         }
       }
       marker {
@@ -329,19 +337,23 @@ resource "datadog_dashboard" "rds_dashboard" {
       title = "Free Storage Space (%)"
       request {
         display_type = "line"
-        formulas {
-          formula = "query0 / query1 * 100"
-          alias   = "Free Storage %"
+        formula {
+          formula_expression = "query0 / query1 * 100"
+          alias              = "Free Storage %"
         }
-        queries {
-          name        = "query0"
-          query       = "avg:aws.rds.free_storage_space{dbinstanceidentifier:${var.db_instance_identifier}}"
-          data_source = "metrics"
+        query {
+          metric_query {
+            name        = "query0"
+            query       = "avg:aws.rds.free_storage_space{dbinstanceidentifier:${var.db_instance_identifier}}"
+            data_source = "metrics"
+          }
         }
-        queries {
-          name        = "query1"
-          query       = "avg:aws.rds.total_storage_space{dbinstanceidentifier:${var.db_instance_identifier}}"
-          data_source = "metrics"
+        query {
+          metric_query {
+            name        = "query1"
+            query       = "avg:aws.rds.total_storage_space{dbinstanceidentifier:${var.db_instance_identifier}}"
+            data_source = "metrics"
+          }
         }
       }
       marker {
@@ -367,14 +379,16 @@ resource "datadog_dashboard" "rds_dashboard" {
       title = "Connection Count"
       request {
         display_type = "line"
-        formulas {
-          formula = "query0"
-          alias   = "Current Connections"
+        formula {
+          formula_expression = "query0"
+          alias              = "Current Connections"
         }
-        queries {
-          name        = "query0"
-          query       = "avg:aws.rds.database_connections{dbinstanceidentifier:${var.db_instance_identifier}}"
-          data_source = "metrics"
+        query {
+          metric_query {
+            name        = "query0"
+            query       = "avg:aws.rds.database_connections{dbinstanceidentifier:${var.db_instance_identifier}}"
+            data_source = "metrics"
+          }
         }
       }
       marker {
@@ -401,13 +415,15 @@ resource "datadog_dashboard" "rds_dashboard" {
         title = "Replica Lag (seconds)"
         request {
           display_type = "line"
-          formulas {
-            formula = "query0"
+          formula {
+            formula_expression = "query0"
           }
-          queries {
-            name        = "query0"
-            query       = "avg:aws.rds.replica_lag{dbinstanceidentifier:${var.db_instance_identifier}}"
-            data_source = "metrics"
+          query {
+            metric_query {
+              name        = "query0"
+              query       = "avg:aws.rds.replica_lag{dbinstanceidentifier:${var.db_instance_identifier}}"
+              data_source = "metrics"
+            }
           }
         }
         marker {
@@ -433,23 +449,27 @@ resource "datadog_dashboard" "rds_dashboard" {
       title = "Read/Write IOPS"
       request {
         display_type = "line"
-        formulas {
-          formula = "query0"
-          alias   = "Read IOPS"
+        formula {
+          formula_expression = "query0"
+          alias              = "Read IOPS"
         }
-        formulas {
-          formula = "query1"
-          alias   = "Write IOPS"
+        formula {
+          formula_expression = "query1"
+          alias              = "Write IOPS"
         }
-        queries {
-          name        = "query0"
-          query       = "avg:aws.rds.read_iops{dbinstanceidentifier:${var.db_instance_identifier}}"
-          data_source = "metrics"
+        query {
+          metric_query {
+            name        = "query0"
+            query       = "avg:aws.rds.read_iops{dbinstanceidentifier:${var.db_instance_identifier}}"
+            data_source = "metrics"
+          }
         }
-        queries {
-          name        = "query1"
-          query       = "avg:aws.rds.write_iops{dbinstanceidentifier:${var.db_instance_identifier}}"
-          data_source = "metrics"
+        query {
+          metric_query {
+            name        = "query1"
+            query       = "avg:aws.rds.write_iops{dbinstanceidentifier:${var.db_instance_identifier}}"
+            data_source = "metrics"
+          }
         }
       }
       yaxis {

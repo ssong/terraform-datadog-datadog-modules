@@ -84,9 +84,9 @@ resource "datadog_monitor" "lambda_error_rate" {
   query = "sum(${var.evaluation_period}):100 * (avg:aws.lambda.errors{aws_function_name:${var.lambda_function_name}} / avg:aws.lambda.invocations{aws_function_name:${var.lambda_function_name}}) > ${local.thresholds[var.criticality].error_rate}"
 
   monitor_thresholds {
-    critical = local.thresholds[var.criticality].error_rate
-    warning  = local.thresholds[var.criticality].error_rate_warning
-    recovery = local.thresholds[var.criticality].error_rate_recovery
+    critical          = local.thresholds[var.criticality].error_rate
+    warning           = local.thresholds[var.criticality].error_rate_warning
+    critical_recovery = local.thresholds[var.criticality].error_rate_recovery
   }
 
   include_tags = true
@@ -108,9 +108,9 @@ resource "datadog_monitor" "lambda_duration" {
   query = "avg(${var.evaluation_period}):p90:aws.lambda.duration{aws_function_name:${var.lambda_function_name}} > ${local.thresholds[var.criticality].duration_p90}"
 
   monitor_thresholds {
-    critical = local.thresholds[var.criticality].duration_p90
-    warning  = local.thresholds[var.criticality].duration_p90_warning
-    recovery = local.thresholds[var.criticality].duration_p90_recovery
+    critical          = local.thresholds[var.criticality].duration_p90
+    warning           = local.thresholds[var.criticality].duration_p90_warning
+    critical_recovery = local.thresholds[var.criticality].duration_p90_recovery
   }
 
   include_tags = true
@@ -132,9 +132,9 @@ resource "datadog_monitor" "lambda_throttles" {
   query = "sum(${var.evaluation_period}):avg:aws.lambda.throttles{aws_function_name:${var.lambda_function_name}} > ${local.thresholds[var.criticality].throttles}"
 
   monitor_thresholds {
-    critical = local.thresholds[var.criticality].throttles
-    warning  = local.thresholds[var.criticality].throttles_warning
-    recovery = local.thresholds[var.criticality].throttles_recovery
+    critical          = local.thresholds[var.criticality].throttles
+    warning           = local.thresholds[var.criticality].throttles_warning
+    critical_recovery = local.thresholds[var.criticality].throttles_recovery
   }
 
   include_tags = true
@@ -156,9 +156,9 @@ resource "datadog_monitor" "lambda_invocation_drop" {
   query = "pct_change(avg(${var.evaluation_period}),avg(${var.baseline_period})):avg:aws.lambda.invocations{aws_function_name:${var.lambda_function_name}} < -${local.thresholds[var.criticality].invocation_drop}"
 
   monitor_thresholds {
-    critical = -1 * local.thresholds[var.criticality].invocation_drop
-    warning  = -1 * local.thresholds[var.criticality].invocation_warning
-    recovery = -1 * local.thresholds[var.criticality].invocation_recovery
+    critical          = -1 * local.thresholds[var.criticality].invocation_drop
+    warning           = -1 * local.thresholds[var.criticality].invocation_warning
+    critical_recovery = -1 * local.thresholds[var.criticality].invocation_recovery
   }
 
   include_tags = true
@@ -180,9 +180,9 @@ resource "datadog_monitor" "lambda_concurrent_executions" {
   query = "avg(${var.evaluation_period}):100 * (avg:aws.lambda.concurrent_executions{aws_function_name:${var.lambda_function_name}} / ${var.concurrent_execution_limit}) > ${local.thresholds[var.criticality].concurrent_limit}"
 
   monitor_thresholds {
-    critical = local.thresholds[var.criticality].concurrent_limit
-    warning  = local.thresholds[var.criticality].concurrent_warning
-    recovery = local.thresholds[var.criticality].concurrent_recovery
+    critical          = local.thresholds[var.criticality].concurrent_limit
+    warning           = local.thresholds[var.criticality].concurrent_warning
+    critical_recovery = local.thresholds[var.criticality].concurrent_recovery
   }
 
   include_tags = true
@@ -205,9 +205,9 @@ resource "datadog_monitor" "lambda_cold_start_duration" {
   query = "avg(${var.evaluation_period}):avg:aws.lambda.enhanced.init_duration{aws_function_name:${var.lambda_function_name}} > ${local.thresholds[var.criticality].cold_start_duration}"
 
   monitor_thresholds {
-    critical = local.thresholds[var.criticality].cold_start_duration
-    warning  = local.thresholds[var.criticality].cold_start_warning
-    recovery = local.thresholds[var.criticality].cold_start_recovery
+    critical          = local.thresholds[var.criticality].cold_start_duration
+    warning           = local.thresholds[var.criticality].cold_start_warning
+    critical_recovery = local.thresholds[var.criticality].cold_start_recovery
   }
 
   include_tags = true
@@ -228,13 +228,15 @@ resource "datadog_dashboard" "lambda_dashboard" {
       title = "Invocations"
       request {
         display_type = "line"
-        formulas {
-          formula = "query0"
+        formula {
+          formula_expression = "query0"
         }
-        queries {
-          name        = "query0"
-          query       = "avg:aws.lambda.invocations{aws_function_name:${var.lambda_function_name}}.as_count()"
-          data_source = "metrics"
+        query {
+          metric_query {
+            name        = "query0"
+            query       = "avg:aws.lambda.invocations{aws_function_name:${var.lambda_function_name}}.as_count()"
+            data_source = "metrics"
+          }
         }
       }
       yaxis {
@@ -249,32 +251,38 @@ resource "datadog_dashboard" "lambda_dashboard" {
       title = "Duration (p50, p90, p99)"
       request {
         display_type = "line"
-        formulas {
-          formula = "query0"
-          alias   = "p50"
+        formula {
+          formula_expression = "query0"
+          alias              = "p50"
         }
-        formulas {
-          formula = "query1"
-          alias   = "p90"
+        formula {
+          formula_expression = "query1"
+          alias              = "p90"
         }
-        formulas {
-          formula = "query2"
-          alias   = "p99"
+        formula {
+          formula_expression = "query2"
+          alias              = "p99"
         }
-        queries {
-          name        = "query0"
-          query       = "p50:aws.lambda.duration{aws_function_name:${var.lambda_function_name}}"
-          data_source = "metrics"
+        query {
+          metric_query {
+            name        = "query0"
+            query       = "p50:aws.lambda.duration{aws_function_name:${var.lambda_function_name}}"
+            data_source = "metrics"
+          }
         }
-        queries {
-          name        = "query1"
-          query       = "p90:aws.lambda.duration{aws_function_name:${var.lambda_function_name}}"
-          data_source = "metrics"
+        query {
+          metric_query {
+            name        = "query1"
+            query       = "p90:aws.lambda.duration{aws_function_name:${var.lambda_function_name}}"
+            data_source = "metrics"
+          }
         }
-        queries {
-          name        = "query2"
-          query       = "p99:aws.lambda.duration{aws_function_name:${var.lambda_function_name}}"
-          data_source = "metrics"
+        query {
+          metric_query {
+            name        = "query2"
+            query       = "p99:aws.lambda.duration{aws_function_name:${var.lambda_function_name}}"
+            data_source = "metrics"
+          }
         }
       }
       yaxis {
@@ -289,19 +297,23 @@ resource "datadog_dashboard" "lambda_dashboard" {
       title = "Error Rate (%)"
       request {
         display_type = "line"
-        formulas {
-          formula = "100 * (query0 / query1)"
-          alias   = "Error Rate %"
+        formula {
+          formula_expression = "100 * (query0 / query1)"
+          alias              = "Error Rate %"
         }
-        queries {
-          name        = "query0"
-          query       = "sum:aws.lambda.errors{aws_function_name:${var.lambda_function_name}}.as_count()"
-          data_source = "metrics"
+        query {
+          metric_query {
+            name        = "query0"
+            query       = "sum:aws.lambda.errors{aws_function_name:${var.lambda_function_name}}.as_count()"
+            data_source = "metrics"
+          }
         }
-        queries {
-          name        = "query1"
-          query       = "sum:aws.lambda.invocations{aws_function_name:${var.lambda_function_name}}.as_count()"
-          data_source = "metrics"
+        query {
+          metric_query {
+            name        = "query1"
+            query       = "sum:aws.lambda.invocations{aws_function_name:${var.lambda_function_name}}.as_count()"
+            data_source = "metrics"
+          }
         }
       }
       marker {
@@ -327,13 +339,15 @@ resource "datadog_dashboard" "lambda_dashboard" {
       title = "Throttles"
       request {
         display_type = "line"
-        formulas {
-          formula = "query0"
+        formula {
+          formula_expression = "query0"
         }
-        queries {
-          name        = "query0"
-          query       = "avg:aws.lambda.throttles{aws_function_name:${var.lambda_function_name}}.as_count()"
-          data_source = "metrics"
+        query {
+          metric_query {
+            name        = "query0"
+            query       = "avg:aws.lambda.throttles{aws_function_name:${var.lambda_function_name}}.as_count()"
+            data_source = "metrics"
+          }
         }
       }
       marker {
@@ -358,27 +372,27 @@ resource "datadog_dashboard" "lambda_dashboard" {
       title = "Concurrent Executions"
       request {
         display_type = "line"
-        formulas {
-          formula = "query0"
-          alias   = "Concurrent Executions"
+        formula {
+          formula_expression = "query0"
+          alias              = "Concurrent Executions"
         }
-        formulas {
-          formula = "query1"
-          alias   = "Limit"
-          style {
-            line_type  = "dashed"
-            line_width = "thin"
+        formula {
+          formula_expression = "query1"
+          alias              = "Limit"
+        }
+        query {
+          metric_query {
+            name        = "query0"
+            query       = "avg:aws.lambda.concurrent_executions{aws_function_name:${var.lambda_function_name}}"
+            data_source = "metrics"
           }
         }
-        queries {
-          name        = "query0"
-          query       = "avg:aws.lambda.concurrent_executions{aws_function_name:${var.lambda_function_name}}"
-          data_source = "metrics"
-        }
-        queries {
-          name        = "query1"
-          query       = var.concurrent_execution_limit
-          data_source = "metrics"
+        query {
+          metric_query {
+            name        = "query1"
+            query       = var.concurrent_execution_limit
+            data_source = "metrics"
+          }
         }
       }
       yaxis {
@@ -393,13 +407,15 @@ resource "datadog_dashboard" "lambda_dashboard" {
       title = "Memory Utilization"
       request {
         display_type = "line"
-        formulas {
-          formula = "query0"
+        formula {
+          formula_expression = "query0"
         }
-        queries {
-          name        = "query0"
-          query       = "avg:aws.lambda.enhanced.memory_utilization{aws_function_name:${var.lambda_function_name}}"
-          data_source = "metrics"
+        query {
+          metric_query {
+            name        = "query0"
+            query       = "avg:aws.lambda.enhanced.memory_utilization{aws_function_name:${var.lambda_function_name}}"
+            data_source = "metrics"
+          }
         }
       }
       yaxis {

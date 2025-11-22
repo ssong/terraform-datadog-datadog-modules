@@ -1,11 +1,10 @@
 name: Validate
 
 on:
+  workflow_call:
   pull_request:
     branches: [main]
-  push:
-    branches: [main]
-
+    
 jobs:
   terraform:
     name: Terraform Validation

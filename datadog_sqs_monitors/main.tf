@@ -75,9 +75,9 @@ resource "datadog_monitor" "sqs_age_max" {
   query = "max(${var.evaluation_period}):avg:aws.sqs.approximate_age_of_oldest_message{queue_name:${var.queue_name}} > ${local.thresholds[var.criticality].age_max}"
 
   monitor_thresholds {
-    critical = local.thresholds[var.criticality].age_max
-    warning  = local.thresholds[var.criticality].age_warning
-    recovery = local.thresholds[var.criticality].age_recovery
+    critical          = local.thresholds[var.criticality].age_max
+    warning           = local.thresholds[var.criticality].age_warning
+    critical_recovery = local.thresholds[var.criticality].age_recovery
   }
 
   include_tags = true
@@ -99,9 +99,9 @@ resource "datadog_monitor" "sqs_approximate_count" {
   query = "avg(${var.evaluation_period}):avg:aws.sqs.approximate_number_of_messages_visible{queue_name:${var.queue_name}} > ${local.thresholds[var.criticality].approximate_count}"
 
   monitor_thresholds {
-    critical = local.thresholds[var.criticality].approximate_count
-    warning  = local.thresholds[var.criticality].approximate_warning
-    recovery = local.thresholds[var.criticality].approximate_recovery
+    critical          = local.thresholds[var.criticality].approximate_count
+    warning           = local.thresholds[var.criticality].approximate_warning
+    critical_recovery = local.thresholds[var.criticality].approximate_recovery
   }
 
   include_tags = true
@@ -146,9 +146,9 @@ resource "datadog_monitor" "sqs_error_rate" {
   query = "sum(${var.evaluation_period}):100 * (sum:aws.sqs.number_of_messages_received_not_valid{queue_name:${var.queue_name}}.as_count() / sum:aws.sqs.number_of_messages_received{queue_name:${var.queue_name}}.as_count()) > ${local.thresholds[var.criticality].error_rate}"
 
   monitor_thresholds {
-    critical = local.thresholds[var.criticality].error_rate
-    warning  = local.thresholds[var.criticality].error_rate_warning
-    recovery = local.thresholds[var.criticality].error_rate_recovery
+    critical          = local.thresholds[var.criticality].error_rate
+    warning           = local.thresholds[var.criticality].error_rate_warning
+    critical_recovery = local.thresholds[var.criticality].error_rate_recovery
   }
 
   include_tags = true
@@ -170,9 +170,9 @@ resource "datadog_monitor" "sqs_throughput_drop" {
   query = "pct_change(avg(${var.evaluation_period}),avg(${var.baseline_period})):sum:aws.sqs.number_of_messages_received{queue_name:${var.queue_name}}.as_count() < -${local.thresholds[var.criticality].throughput_drop}"
 
   monitor_thresholds {
-    critical = -1 * local.thresholds[var.criticality].throughput_drop
-    warning  = -1 * local.thresholds[var.criticality].throughput_warning
-    recovery = -1 * local.thresholds[var.criticality].throughput_recovery
+    critical          = -1 * local.thresholds[var.criticality].throughput_drop
+    warning           = -1 * local.thresholds[var.criticality].throughput_warning
+    critical_recovery = -1 * local.thresholds[var.criticality].throughput_recovery
   }
 
   include_tags = true
@@ -193,23 +193,27 @@ resource "datadog_dashboard" "sqs_dashboard" {
       title = "Messages Sent vs Received"
       request {
         display_type = "line"
-        formulas {
-          formula = "query0"
-          alias   = "Messages Sent"
+        formula {
+          formula_expression = "query0"
+          alias              = "Messages Sent"
         }
-        formulas {
-          formula = "query1"
-          alias   = "Messages Received"
+        formula {
+          formula_expression = "query1"
+          alias              = "Messages Received"
         }
-        queries {
-          name        = "query0"
-          query       = "sum:aws.sqs.number_of_messages_sent{queue_name:${var.queue_name}}.as_count()"
-          data_source = "metrics"
+        query {
+          metric_query {
+            name        = "query0"
+            query       = "sum:aws.sqs.number_of_messages_sent{queue_name:${var.queue_name}}.as_count()"
+            data_source = "metrics"
+          }
         }
-        queries {
-          name        = "query1"
-          query       = "sum:aws.sqs.number_of_messages_received{queue_name:${var.queue_name}}.as_count()"
-          data_source = "metrics"
+        query {
+          metric_query {
+            name        = "query1"
+            query       = "sum:aws.sqs.number_of_messages_received{queue_name:${var.queue_name}}.as_count()"
+            data_source = "metrics"
+          }
         }
       }
       yaxis {
@@ -224,32 +228,38 @@ resource "datadog_dashboard" "sqs_dashboard" {
       title = "Queue Depth (Visible, Not Visible, Delayed)"
       request {
         display_type = "line"
-        formulas {
-          formula = "query0"
-          alias   = "Visible Messages"
+        formula {
+          formula_expression = "query0"
+          alias              = "Visible Messages"
         }
-        formulas {
-          formula = "query1"
-          alias   = "Not Visible Messages"
+        formula {
+          formula_expression = "query1"
+          alias              = "Not Visible Messages"
         }
-        formulas {
-          formula = "query2"
-          alias   = "Delayed Messages"
+        formula {
+          formula_expression = "query2"
+          alias              = "Delayed Messages"
         }
-        queries {
-          name        = "query0"
-          query       = "avg:aws.sqs.approximate_number_of_messages_visible{queue_name:${var.queue_name}}"
-          data_source = "metrics"
+        query {
+          metric_query {
+            name        = "query0"
+            query       = "avg:aws.sqs.approximate_number_of_messages_visible{queue_name:${var.queue_name}}"
+            data_source = "metrics"
+          }
         }
-        queries {
-          name        = "query1"
-          query       = "avg:aws.sqs.approximate_number_of_messages_not_visible{queue_name:${var.queue_name}}"
-          data_source = "metrics"
+        query {
+          metric_query {
+            name        = "query1"
+            query       = "avg:aws.sqs.approximate_number_of_messages_not_visible{queue_name:${var.queue_name}}"
+            data_source = "metrics"
+          }
         }
-        queries {
-          name        = "query2"
-          query       = "avg:aws.sqs.approximate_number_of_messages_delayed{queue_name:${var.queue_name}}"
-          data_source = "metrics"
+        query {
+          metric_query {
+            name        = "query2"
+            query       = "avg:aws.sqs.approximate_number_of_messages_delayed{queue_name:${var.queue_name}}"
+            data_source = "metrics"
+          }
         }
       }
       marker {
@@ -274,13 +284,15 @@ resource "datadog_dashboard" "sqs_dashboard" {
       title = "Age of Oldest Message (seconds)"
       request {
         display_type = "line"
-        formulas {
-          formula = "query0"
+        formula {
+          formula_expression = "query0"
         }
-        queries {
-          name        = "query0"
-          query       = "avg:aws.sqs.approximate_age_of_oldest_message{queue_name:${var.queue_name}}"
-          data_source = "metrics"
+        query {
+          metric_query {
+            name        = "query0"
+            query       = "avg:aws.sqs.approximate_age_of_oldest_message{queue_name:${var.queue_name}}"
+            data_source = "metrics"
+          }
         }
       }
       marker {
@@ -305,19 +317,23 @@ resource "datadog_dashboard" "sqs_dashboard" {
       title = "Message Reception Error Rate (%)"
       request {
         display_type = "line"
-        formulas {
-          formula = "100 * (query0 / query1)"
-          alias   = "Error Rate %"
+        formula {
+          formula_expression = "100 * (query0 / query1)"
+          alias              = "Error Rate %"
         }
-        queries {
-          name        = "query0"
-          query       = "sum:aws.sqs.number_of_messages_received_not_valid{queue_name:${var.queue_name}}.as_count()"
-          data_source = "metrics"
+        query {
+          metric_query {
+            name        = "query0"
+            query       = "sum:aws.sqs.number_of_messages_received_not_valid{queue_name:${var.queue_name}}.as_count()"
+            data_source = "metrics"
+          }
         }
-        queries {
-          name        = "query1"
-          query       = "sum:aws.sqs.number_of_messages_received{queue_name:${var.queue_name}}.as_count()"
-          data_source = "metrics"
+        query {
+          metric_query {
+            name        = "query1"
+            query       = "sum:aws.sqs.number_of_messages_received{queue_name:${var.queue_name}}.as_count()"
+            data_source = "metrics"
+          }
         }
       }
       marker {
@@ -343,13 +359,15 @@ resource "datadog_dashboard" "sqs_dashboard" {
       title = "Messages Deleted"
       request {
         display_type = "line"
-        formulas {
-          formula = "query0"
+        formula {
+          formula_expression = "query0"
         }
-        queries {
-          name        = "query0"
-          query       = "sum:aws.sqs.number_of_messages_deleted{queue_name:${var.queue_name}}.as_count()"
-          data_source = "metrics"
+        query {
+          metric_query {
+            name        = "query0"
+            query       = "sum:aws.sqs.number_of_messages_deleted{queue_name:${var.queue_name}}.as_count()"
+            data_source = "metrics"
+          }
         }
       }
       yaxis {

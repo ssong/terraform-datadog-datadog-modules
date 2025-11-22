@@ -87,9 +87,9 @@ resource "datadog_monitor" "elasticache_cpu_utilization" {
   query = "avg(${var.evaluation_period}):avg:${local.metric_prefix}.cpuutilization{cacheclusterid:${var.cache_cluster_id}} > ${local.thresholds[var.criticality].cpu_utilization}"
 
   monitor_thresholds {
-    critical = local.thresholds[var.criticality].cpu_utilization
-    warning  = local.thresholds[var.criticality].cpu_warning
-    recovery = local.thresholds[var.criticality].cpu_recovery
+    critical          = local.thresholds[var.criticality].cpu_utilization
+    warning           = local.thresholds[var.criticality].cpu_warning
+    critical_recovery = local.thresholds[var.criticality].cpu_recovery
   }
 
   include_tags = true
@@ -111,9 +111,9 @@ resource "datadog_monitor" "elasticache_memory_utilization" {
   query = var.cache_type == "redis" ? "avg(${var.evaluation_period}):avg:${local.metric_prefix}.database_memory_usage_percentage{cacheclusterid:${var.cache_cluster_id}} > ${local.thresholds[var.criticality].memory_utilization}" : "avg(${var.evaluation_period}):avg:${local.metric_prefix}.memory_usage{cacheclusterid:${var.cache_cluster_id}} / avg:${local.metric_prefix}.memory_limit{cacheclusterid:${var.cache_cluster_id}} * 100 > ${local.thresholds[var.criticality].memory_utilization}"
 
   monitor_thresholds {
-    critical = local.thresholds[var.criticality].memory_utilization
-    warning  = local.thresholds[var.criticality].memory_warning
-    recovery = local.thresholds[var.criticality].memory_recovery
+    critical          = local.thresholds[var.criticality].memory_utilization
+    warning           = local.thresholds[var.criticality].memory_warning
+    critical_recovery = local.thresholds[var.criticality].memory_recovery
   }
 
   include_tags = true
@@ -135,9 +135,9 @@ resource "datadog_monitor" "elasticache_swap_usage" {
   query = "avg(${var.evaluation_period}):avg:${local.metric_prefix}.swap_usage{cacheclusterid:${var.cache_cluster_id}} > ${local.thresholds[var.criticality].swap_utilization}"
 
   monitor_thresholds {
-    critical = local.thresholds[var.criticality].swap_utilization
-    warning  = local.thresholds[var.criticality].swap_warning
-    recovery = local.thresholds[var.criticality].swap_recovery
+    critical          = local.thresholds[var.criticality].swap_utilization
+    warning           = local.thresholds[var.criticality].swap_warning
+    critical_recovery = local.thresholds[var.criticality].swap_recovery
   }
 
   include_tags = true
@@ -159,9 +159,9 @@ resource "datadog_monitor" "elasticache_evictions" {
   query = "avg(${var.evaluation_period}):avg:${local.metric_prefix}.evictions{cacheclusterid:${var.cache_cluster_id}} > ${local.thresholds[var.criticality].evictions}"
 
   monitor_thresholds {
-    critical = local.thresholds[var.criticality].evictions
-    warning  = local.thresholds[var.criticality].evictions_warning
-    recovery = local.thresholds[var.criticality].evictions_recovery
+    critical          = local.thresholds[var.criticality].evictions
+    warning           = local.thresholds[var.criticality].evictions_warning
+    critical_recovery = local.thresholds[var.criticality].evictions_recovery
   }
 
   include_tags = true
@@ -183,9 +183,9 @@ resource "datadog_monitor" "elasticache_current_connections" {
   query = "avg(${var.evaluation_period}):avg:${local.metric_prefix}.curr_connections{cacheclusterid:${var.cache_cluster_id}} / ${var.max_connections} * 100 > ${local.thresholds[var.criticality].connections}"
 
   monitor_thresholds {
-    critical = local.thresholds[var.criticality].connections
-    warning  = local.thresholds[var.criticality].connections_warning
-    recovery = local.thresholds[var.criticality].connections_recovery
+    critical          = local.thresholds[var.criticality].connections
+    warning           = local.thresholds[var.criticality].connections_warning
+    critical_recovery = local.thresholds[var.criticality].connections_recovery
   }
 
   include_tags = true
@@ -208,9 +208,9 @@ resource "datadog_monitor" "elasticache_replication_lag" {
   query = "avg(${var.evaluation_period}):avg:${local.metric_prefix}.replication_lag{cacheclusterid:${var.cache_cluster_id}} > ${local.thresholds[var.criticality].replication_lag}"
 
   monitor_thresholds {
-    critical = local.thresholds[var.criticality].replication_lag
-    warning  = local.thresholds[var.criticality].replication_lag_warning
-    recovery = local.thresholds[var.criticality].replication_lag_recovery
+    critical          = local.thresholds[var.criticality].replication_lag
+    warning           = local.thresholds[var.criticality].replication_lag_warning
+    critical_recovery = local.thresholds[var.criticality].replication_lag_recovery
   }
 
   include_tags = true
@@ -231,13 +231,15 @@ resource "datadog_dashboard" "elasticache_dashboard" {
       title = "CPU Utilization (%)"
       request {
         display_type = "line"
-        formulas {
-          formula = "query0"
+        formula {
+          formula_expression = "query0"
         }
-        queries {
-          name        = "query0"
-          query       = "avg:${local.metric_prefix}.cpuutilization{cacheclusterid:${var.cache_cluster_id}}"
-          data_source = "metrics"
+        query {
+          metric_query {
+            name        = "query0"
+            query       = "avg:${local.metric_prefix}.cpuutilization{cacheclusterid:${var.cache_cluster_id}}"
+            data_source = "metrics"
+          }
         }
       }
       marker {
@@ -263,21 +265,25 @@ resource "datadog_dashboard" "elasticache_dashboard" {
       title = "Memory Utilization (%)"
       request {
         display_type = "line"
-        formulas {
-          formula = var.cache_type == "redis" ? "query0" : "query0 / query1 * 100"
-          alias   = "Memory Utilization %"
+        formula {
+          formula_expression = var.cache_type == "redis" ? "query0" : "query0 / query1 * 100"
+          alias              = "Memory Utilization %"
         }
-        queries {
-          name        = "query0"
-          query       = var.cache_type == "redis" ? "avg:${local.metric_prefix}.database_memory_usage_percentage{cacheclusterid:${var.cache_cluster_id}}" : "avg:${local.metric_prefix}.memory_usage{cacheclusterid:${var.cache_cluster_id}}"
-          data_source = "metrics"
+        query {
+          metric_query {
+            name        = "query0"
+            query       = var.cache_type == "redis" ? "avg:${local.metric_prefix}.database_memory_usage_percentage{cacheclusterid:${var.cache_cluster_id}}" : "avg:${local.metric_prefix}.memory_usage{cacheclusterid:${var.cache_cluster_id}}"
+            data_source = "metrics"
+          }
         }
-        dynamic "queries" {
+        dynamic "query" {
           for_each = var.cache_type == "memcached" ? [1] : []
           content {
-            name        = "query1"
-            query       = "avg:${local.metric_prefix}.memory_limit{cacheclusterid:${var.cache_cluster_id}}"
-            data_source = "metrics"
+            metric_query {
+              name        = "query1"
+              query       = "avg:${local.metric_prefix}.memory_limit{cacheclusterid:${var.cache_cluster_id}}"
+              data_source = "metrics"
+            }
           }
         }
       }
@@ -304,13 +310,15 @@ resource "datadog_dashboard" "elasticache_dashboard" {
       title = "Swap Usage"
       request {
         display_type = "line"
-        formulas {
-          formula = "query0"
+        formula {
+          formula_expression = "query0"
         }
-        queries {
-          name        = "query0"
-          query       = "avg:${local.metric_prefix}.swap_usage{cacheclusterid:${var.cache_cluster_id}}"
-          data_source = "metrics"
+        query {
+          metric_query {
+            name        = "query0"
+            query       = "avg:${local.metric_prefix}.swap_usage{cacheclusterid:${var.cache_cluster_id}}"
+            data_source = "metrics"
+          }
         }
       }
       marker {
@@ -335,13 +343,15 @@ resource "datadog_dashboard" "elasticache_dashboard" {
       title = "Evictions"
       request {
         display_type = "line"
-        formulas {
-          formula = "query0"
+        formula {
+          formula_expression = "query0"
         }
-        queries {
-          name        = "query0"
-          query       = "avg:${local.metric_prefix}.evictions{cacheclusterid:${var.cache_cluster_id}}"
-          data_source = "metrics"
+        query {
+          metric_query {
+            name        = "query0"
+            query       = "avg:${local.metric_prefix}.evictions{cacheclusterid:${var.cache_cluster_id}}"
+            data_source = "metrics"
+          }
         }
       }
       marker {
@@ -366,14 +376,16 @@ resource "datadog_dashboard" "elasticache_dashboard" {
       title = "Current Connections"
       request {
         display_type = "line"
-        formulas {
-          formula = "query0"
-          alias   = "Current Connections"
+        formula {
+          formula_expression = "query0"
+          alias              = "Current Connections"
         }
-        queries {
-          name        = "query0"
-          query       = "avg:${local.metric_prefix}.curr_connections{cacheclusterid:${var.cache_cluster_id}}"
-          data_source = "metrics"
+        query {
+          metric_query {
+            name        = "query0"
+            query       = "avg:${local.metric_prefix}.curr_connections{cacheclusterid:${var.cache_cluster_id}}"
+            data_source = "metrics"
+          }
         }
       }
       marker {
@@ -400,13 +412,15 @@ resource "datadog_dashboard" "elasticache_dashboard" {
         title = "Replication Lag (seconds)"
         request {
           display_type = "line"
-          formulas {
-            formula = "query0"
+          formula {
+            formula_expression = "query0"
           }
-          queries {
-            name        = "query0"
-            query       = "avg:${local.metric_prefix}.replication_lag{cacheclusterid:${var.cache_cluster_id}}"
-            data_source = "metrics"
+          query {
+            metric_query {
+              name        = "query0"
+              query       = "avg:${local.metric_prefix}.replication_lag{cacheclusterid:${var.cache_cluster_id}}"
+              data_source = "metrics"
+            }
           }
         }
         marker {
@@ -435,13 +449,15 @@ resource "datadog_dashboard" "elasticache_dashboard" {
         title = "Cache Hit Rate"
         request {
           display_type = "line"
-          formulas {
-            formula = "query0"
+          formula {
+            formula_expression = "query0"
           }
-          queries {
-            name        = "query0"
-            query       = "avg:${local.metric_prefix}.cache_hit_rate{cacheclusterid:${var.cache_cluster_id}}"
-            data_source = "metrics"
+          query {
+            metric_query {
+              name        = "query0"
+              query       = "avg:${local.metric_prefix}.cache_hit_rate{cacheclusterid:${var.cache_cluster_id}}"
+              data_source = "metrics"
+            }
           }
         }
         yaxis {
@@ -460,20 +476,20 @@ resource "datadog_dashboard" "elasticache_dashboard" {
         title = "Get & Set Commands"
         request {
           display_type = "line"
-          formulas {
+          formula {
             formula = "query0"
             alias   = "Get Commands"
           }
-          formulas {
+          formula {
             formula = "query1"
             alias   = "Set Commands"
           }
-          queries {
+          query {
             name        = "query0"
             query       = "avg:${local.metric_prefix}.cmd_get{cacheclusterid:${var.cache_cluster_id}}"
             data_source = "metrics"
           }
-          queries {
+          query {
             name        = "query1"
             query       = "avg:${local.metric_prefix}.cmd_set{cacheclusterid:${var.cache_cluster_id}}"
             data_source = "metrics"
