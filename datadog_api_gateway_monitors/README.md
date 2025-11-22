@@ -5,10 +5,21 @@ This Terraform module creates a set of Datadog monitors for AWS API Gateway. The
 ## Monitors Created
 
 1. **Error Rate Monitor**: Alerts when the API Gateway has a high 4xx/5xx error rate
-2. **Latency Monitor**: Alerts when the API Gateway latency (P90) exceeds thresholds
-3. **Request Count Drop Monitor**: Alerts when the API Gateway request count drops significantly
-4. **Throttling Monitor**: Alerts when the API Gateway is being throttled
-5. **Integration Latency Monitor**: Alerts when the API Gateway integration latency is high
+2. **5xx Server Error Rate Monitor**: Alerts specifically for server-side 5xx errors (stricter thresholds)
+3. **Latency Monitor**: Alerts when the API Gateway latency (P90) exceeds thresholds
+4. **Request Count Drop Monitor**: Alerts when the API Gateway request count drops significantly
+5. **Throttling Monitor**: Alerts when the API Gateway is being throttled
+6. **Integration Latency Monitor**: Alerts when the API Gateway integration latency is high
+
+## Dashboard
+
+When `create_dashboard = true`, creates a dashboard with 6 widgets using modern Datadog query syntax:
+- Request count over time
+- Latency percentiles (p50, p90, p99)
+- Integration latency
+- Error rate percentage
+- 4xx vs 5xx error breakdown
+- Throttle count
 
 ## Usage
 
@@ -49,6 +60,7 @@ module "api_gateway_monitors" {
 ### High
 ```
 error_rate           = 2.0% (warning at 1.0%)
+server_error_rate    = 1.0% (warning at 0.5%)
 latency_p90          = 1000ms (warning at 800ms)
 count_drop           = 15% (warning at 10%)
 throttles            = 2 (warning at 1)
@@ -58,6 +70,7 @@ integration_latency  = 1000ms (warning at 500ms)
 ### Medium
 ```
 error_rate           = 5.0% (warning at 2.0%)
+server_error_rate    = 2.0% (warning at 1.0%)
 latency_p90          = 3000ms (warning at 2000ms)
 count_drop           = 30% (warning at 15%)
 throttles            = 5 (warning at 2)
@@ -67,6 +80,7 @@ integration_latency  = 2000ms (warning at 1000ms)
 ### Low
 ```
 error_rate           = 10.0% (warning at 5.0%)
+server_error_rate    = 5.0% (warning at 2.0%)
 latency_p90          = 5000ms (warning at 3000ms)
 count_drop           = 50% (warning at 30%)
 throttles            = 10 (warning at 5)

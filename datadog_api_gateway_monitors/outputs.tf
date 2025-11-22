@@ -2,6 +2,7 @@ output "monitor_ids" {
   description = "Map of the created DataDog monitor IDs"
   value = {
     error_rate          = datadog_monitor.api_gateway_error_rate.id
+    server_error_rate   = datadog_monitor.api_gateway_5xx_error_rate.id
     latency             = datadog_monitor.api_gateway_latency.id
     count_drop          = datadog_monitor.api_gateway_count_drop.id
     throttles           = datadog_monitor.api_gateway_throttles.id

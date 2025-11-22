@@ -11,6 +11,17 @@ This Terraform module creates a set of Datadog monitors for AWS RDS instances. T
 5. **Connection Count Monitor**: Alerts when the RDS instance is nearing its maximum connection limit
 6. **Replica Lag Monitor** (only for read replicas): Alerts when a read replica has high replication lag
 
+## Dashboard
+
+When `create_dashboard = true`, creates a dashboard with 7 widgets using modern Datadog query syntax:
+- CPU utilization percentage
+- Memory utilization percentage
+- Disk queue depth
+- Free storage space percentage
+- Connection count
+- Replica lag (conditional, only for replicas)
+- Read/Write IOPS
+
 ## Usage
 
 ```hcl

@@ -13,6 +13,9 @@ locals {
       warning_rate          = 5.0
       error_rate_recovery   = 9.0
       warning_rate_recovery = 4.0
+      server_error_rate     = 5.0
+      server_error_warning  = 2.0
+      server_error_recovery = 1.5
       latency_p90           = 5000
       latency_p90_warning   = 3000
       latency_p90_recovery  = 2500
@@ -31,6 +34,9 @@ locals {
       warning_rate          = 2.0
       error_rate_recovery   = 4.5
       warning_rate_recovery = 1.5
+      server_error_rate     = 2.0
+      server_error_warning  = 1.0
+      server_error_recovery = 0.75
       latency_p90           = 3000
       latency_p90_warning   = 2000
       latency_p90_recovery  = 1500
@@ -49,6 +55,9 @@ locals {
       warning_rate          = 1.0
       error_rate_recovery   = 1.5
       warning_rate_recovery = 0.5
+      server_error_rate     = 1.0
+      server_error_warning  = 0.5
+      server_error_recovery = 0.25
       latency_p90           = 1000
       latency_p90_warning   = 800
       latency_p90_recovery  = 600
@@ -85,6 +94,31 @@ resource "datadog_monitor" "api_gateway_error_rate" {
 
   include_tags = true
   tags         = concat(var.tags, ["api_gateway:${var.api_gateway_name}", "managed_by:terraform", "team:${var.team}"])
+
+  priority = local.priorities[var.criticality]
+}
+
+resource "datadog_monitor" "api_gateway_5xx_error_rate" {
+  name               = "${var.prefix}API Gateway 5xx Server Error Rate - ${var.api_gateway_name}"
+  type               = "query alert"
+  message            = <<-EOT
+    API Gateway ${var.api_gateway_name} is experiencing a high 5xx server error rate.
+    This indicates server-side issues that require immediate attention.
+
+    Notify: ${var.notification_target}
+  EOT
+  escalation_message = "API Gateway ${var.api_gateway_name} continues to experience high 5xx server error rates!"
+
+  query = "sum(${var.evaluation_period}):100 * sum:aws.apigateway.5xxerror{apiname:${var.api_gateway_name}} / sum:aws.apigateway.count{apiname:${var.api_gateway_name}} > ${local.thresholds[var.criticality].server_error_rate}"
+
+  monitor_thresholds {
+    critical         = local.thresholds[var.criticality].server_error_rate
+    warning          = local.thresholds[var.criticality].server_error_warning
+    warning_recovery = local.thresholds[var.criticality].server_error_recovery
+  }
+
+  include_tags = true
+  tags         = concat(var.tags, ["api_gateway:${var.api_gateway_name}", "managed_by:terraform", "team:${var.team}", "error_type:5xx"])
 
   priority = local.priorities[var.criticality]
 }
@@ -196,10 +230,14 @@ resource "datadog_dashboard" "api_gateway_dashboard" {
     timeseries_definition {
       title = "Request Count"
       request {
-        q            = "sum:aws.apigateway.count{apiname:${var.api_gateway_name}}.as_count()"
         display_type = "line"
-        metadata {
-          expression = "sum:aws.apigateway.count{apiname:${var.api_gateway_name}}.as_count()"
+        formulas {
+          formula = "query0"
+        }
+        queries {
+          name        = "query0"
+          query       = "sum:aws.apigateway.count{apiname:${var.api_gateway_name}}.as_count()"
+          data_source = "metrics"
         }
       }
       yaxis {
@@ -213,24 +251,33 @@ resource "datadog_dashboard" "api_gateway_dashboard" {
     timeseries_definition {
       title = "Latency (p50, p90, p99)"
       request {
-        q            = "p50:aws.apigateway.latency{apiname:${var.api_gateway_name}}"
         display_type = "line"
-        metadata {
-          expression = "p50:aws.apigateway.latency{apiname:${var.api_gateway_name}}"
+        formulas {
+          formula = "query0"
+          alias   = "p50"
         }
-      }
-      request {
-        q            = "p90:aws.apigateway.latency{apiname:${var.api_gateway_name}}"
-        display_type = "line"
-        metadata {
-          expression = "p90:aws.apigateway.latency{apiname:${var.api_gateway_name}}"
+        formulas {
+          formula = "query1"
+          alias   = "p90"
         }
-      }
-      request {
-        q            = "p99:aws.apigateway.latency{apiname:${var.api_gateway_name}}"
-        display_type = "line"
-        metadata {
-          expression = "p99:aws.apigateway.latency{apiname:${var.api_gateway_name}}"
+        formulas {
+          formula = "query2"
+          alias   = "p99"
+        }
+        queries {
+          name        = "query0"
+          query       = "p50:aws.apigateway.latency{apiname:${var.api_gateway_name}}"
+          data_source = "metrics"
+        }
+        queries {
+          name        = "query1"
+          query       = "p90:aws.apigateway.latency{apiname:${var.api_gateway_name}}"
+          data_source = "metrics"
+        }
+        queries {
+          name        = "query2"
+          query       = "p99:aws.apigateway.latency{apiname:${var.api_gateway_name}}"
+          data_source = "metrics"
         }
       }
       marker {
@@ -254,10 +301,14 @@ resource "datadog_dashboard" "api_gateway_dashboard" {
     timeseries_definition {
       title = "Integration Latency"
       request {
-        q            = "avg:aws.apigateway.integration_latency{apiname:${var.api_gateway_name}}"
         display_type = "line"
-        metadata {
-          expression = "avg:aws.apigateway.integration_latency{apiname:${var.api_gateway_name}}"
+        formulas {
+          formula = "query0"
+        }
+        queries {
+          name        = "query0"
+          query       = "avg:aws.apigateway.integration_latency{apiname:${var.api_gateway_name}}"
+          data_source = "metrics"
         }
       }
       marker {
@@ -281,10 +332,25 @@ resource "datadog_dashboard" "api_gateway_dashboard" {
     timeseries_definition {
       title = "Error Rate (%) - 4xx/5xx"
       request {
-        q            = "100 * (sum:aws.apigateway.5xxerror{apiname:${var.api_gateway_name}}.as_count() + sum:aws.apigateway.4xxerror{apiname:${var.api_gateway_name}}.as_count()) / sum:aws.apigateway.count{apiname:${var.api_gateway_name}}.as_count()"
         display_type = "line"
-        metadata {
-          expression = "100 * (sum:aws.apigateway.5xxerror{apiname:${var.api_gateway_name}}.as_count() + sum:aws.apigateway.4xxerror{apiname:${var.api_gateway_name}}.as_count()) / sum:aws.apigateway.count{apiname:${var.api_gateway_name}}.as_count()"
+        formulas {
+          formula = "100 * (query0 + query1) / query2"
+          alias   = "Error Rate %"
+        }
+        queries {
+          name        = "query0"
+          query       = "sum:aws.apigateway.5xxerror{apiname:${var.api_gateway_name}}.as_count()"
+          data_source = "metrics"
+        }
+        queries {
+          name        = "query1"
+          query       = "sum:aws.apigateway.4xxerror{apiname:${var.api_gateway_name}}.as_count()"
+          data_source = "metrics"
+        }
+        queries {
+          name        = "query2"
+          query       = "sum:aws.apigateway.count{apiname:${var.api_gateway_name}}.as_count()"
+          data_source = "metrics"
         }
       }
       marker {
@@ -309,19 +375,24 @@ resource "datadog_dashboard" "api_gateway_dashboard" {
     timeseries_definition {
       title = "4xx vs 5xx Errors"
       request {
-        q            = "sum:aws.apigateway.4xxerror{apiname:${var.api_gateway_name}}.as_count()"
         display_type = "line"
-        metadata {
-          expression = "sum:aws.apigateway.4xxerror{apiname:${var.api_gateway_name}}.as_count()"
-          alias_name = "4xx errors"
+        formulas {
+          formula = "query0"
+          alias   = "4xx errors"
         }
-      }
-      request {
-        q            = "sum:aws.apigateway.5xxerror{apiname:${var.api_gateway_name}}.as_count()"
-        display_type = "line"
-        metadata {
-          expression = "sum:aws.apigateway.5xxerror{apiname:${var.api_gateway_name}}.as_count()"
-          alias_name = "5xx errors"
+        formulas {
+          formula = "query1"
+          alias   = "5xx errors"
+        }
+        queries {
+          name        = "query0"
+          query       = "sum:aws.apigateway.4xxerror{apiname:${var.api_gateway_name}}.as_count()"
+          data_source = "metrics"
+        }
+        queries {
+          name        = "query1"
+          query       = "sum:aws.apigateway.5xxerror{apiname:${var.api_gateway_name}}.as_count()"
+          data_source = "metrics"
         }
       }
       yaxis {
@@ -335,10 +406,14 @@ resource "datadog_dashboard" "api_gateway_dashboard" {
     timeseries_definition {
       title = "Throttle Count"
       request {
-        q            = "sum:aws.apigateway.throttlecount{apiname:${var.api_gateway_name}}.as_count()"
         display_type = "line"
-        metadata {
-          expression = "sum:aws.apigateway.throttlecount{apiname:${var.api_gateway_name}}.as_count()"
+        formulas {
+          formula = "query0"
+        }
+        queries {
+          name        = "query0"
+          query       = "sum:aws.apigateway.throttlecount{apiname:${var.api_gateway_name}}.as_count()"
+          data_source = "metrics"
         }
       }
       marker {

@@ -11,6 +11,16 @@ This Terraform module creates a set of Datadog monitors for AWS DynamoDB tables.
 5. **System Errors Monitor**: Alerts when the DynamoDB table experiences system errors
 6. **Conditional Check Failed Monitor**: Alerts when there's a high rate of failed conditional checks
 
+## Dashboard
+
+When `create_dashboard = true`, creates a dashboard with 6 widgets using modern Datadog query syntax:
+- Read throttle events
+- Write throttle events
+- Consumed read capacity units
+- Consumed write capacity units
+- System errors
+- Conditional check failed requests
+
 ## Usage
 
 ```hcl

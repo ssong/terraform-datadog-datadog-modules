@@ -11,6 +11,8 @@ This Terraform module creates a standardized set of DataDog monitors for AWS Lam
   - Throttling
   - Invocation drops (compared to baseline)
   - Concurrent execution limits
+  - Cold start duration
+- Optional dashboard with 6 widgets using modern Datadog query syntax
 
 ## Usage
 
@@ -58,6 +60,7 @@ The module uses the following thresholds for each criticality level:
 ### High Criticality (Production/Critical Services)
 - Error rate: 2% critical, 1% warning
 - Duration (P90): 1000ms critical, 800ms warning
+- Cold start duration: 1000ms critical, 750ms warning
 - Throttles: 2 critical, 1 warning
 - Invocation drop: 15% critical, 10% warning
 - Concurrent executions: 60% critical, 50% warning
@@ -65,6 +68,7 @@ The module uses the following thresholds for each criticality level:
 ### Medium Criticality (Important Services)
 - Error rate: 5% critical, 2% warning
 - Duration (P90): 3000ms critical, 2000ms warning
+- Cold start duration: 2000ms critical, 1500ms warning
 - Throttles: 5 critical, 2 warning
 - Invocation drop: 30% critical, 15% warning
 - Concurrent executions: 70% critical, 60% warning
@@ -72,6 +76,7 @@ The module uses the following thresholds for each criticality level:
 ### Low Criticality (Non-Critical Services)
 - Error rate: 10% critical, 5% warning
 - Duration (P90): 5000ms critical, 3000ms warning
+- Cold start duration: 3000ms critical, 2000ms warning
 - Throttles: 10 critical, 5 warning
 - Invocation drop: 50% critical, 30% warning
 - Concurrent executions: 80% critical, 70% warning

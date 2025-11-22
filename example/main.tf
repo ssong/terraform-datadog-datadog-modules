@@ -7,65 +7,65 @@ provider "datadog" {
 module "api_lambda_monitors" {
   source = "../datadog_lambda_monitors"
 
-  lambda_function_name     = "api-gateway-lambda-function"
-  criticality              = "high"
-  notification_target      = "@slack-api-alerts @pagerduty-core-team"
+  lambda_function_name       = "api-gateway-lambda-function"
+  criticality                = "high"
+  notification_target        = "@slack-api-alerts @pagerduty-core-team"
   concurrent_execution_limit = 2000
-  tags                     = ["service:api-gateway", "team:platform"]
-  create_dashboard         = true
+  tags                       = ["service:api-gateway", "team:platform"]
+  create_dashboard           = true
 }
 
 module "batch_processing_lambda_monitors" {
   source = "../datadog_lambda_monitors"
 
-  lambda_function_name     = "batch-processing-function"
-  criticality              = "medium"
-  notification_target      = "@slack-batch-alerts"
-  prefix                   = "[Batch Lambda] "
-  tags                     = ["service:batch-processing", "team:data"]
+  lambda_function_name = "batch-processing-function"
+  criticality          = "medium"
+  notification_target  = "@slack-batch-alerts"
+  prefix               = "[Batch Lambda] "
+  tags                 = ["service:batch-processing", "team:data"]
 }
 
 module "reporting_lambda_monitors" {
   source = "../datadog_lambda_monitors"
 
-  lambda_function_name     = "weekly-reporting-function"
-  criticality              = "low"
-  notification_target      = "@slack-reporting-team"
-  evaluation_period        = "last_30m"
-  baseline_period          = "day_before"
-  tags                     = ["service:reporting", "team:analytics"]
+  lambda_function_name = "weekly-reporting-function"
+  criticality          = "low"
+  notification_target  = "@slack-reporting-team"
+  evaluation_period    = "last_30m"
+  baseline_period      = "day_before"
+  tags                 = ["service:reporting", "team:analytics"]
 }
 
 # API Gateway Monitors Examples
 module "main_api_gateway_monitors" {
   source = "../datadog_api_gateway_monitors"
 
-  api_gateway_name     = "main-api-gateway"
-  criticality          = "high"
-  notification_target  = "@slack-api-alerts @pagerduty-api-team"
-  tags                 = ["service:api-gateway", "team:platform"]
-  create_dashboard     = true
+  api_gateway_name    = "main-api-gateway"
+  criticality         = "high"
+  notification_target = "@slack-api-alerts @pagerduty-api-team"
+  tags                = ["service:api-gateway", "team:platform"]
+  create_dashboard    = true
 }
 
 module "internal_api_gateway_monitors" {
   source = "../datadog_api_gateway_monitors"
 
-  api_gateway_name     = "internal-api-gateway"
-  criticality          = "medium"
-  notification_target  = "@slack-internal-api-alerts"
-  prefix               = "[Internal API] "
-  tags                 = ["service:internal-api", "team:backend"]
+  api_gateway_name    = "internal-api-gateway"
+  criticality         = "medium"
+  notification_target = "@slack-internal-api-alerts"
+  prefix              = "[Internal API] "
+  tags                = ["service:internal-api", "team:backend"]
 }
 
 module "test_api_gateway_monitors" {
   source = "../datadog_api_gateway_monitors"
 
-  api_gateway_name     = "test-api-gateway"
-  criticality          = "low"
-  notification_target  = "@slack-test-team"
-  evaluation_period    = "last_30m"
-  baseline_period      = "day_before"
-  tags                 = ["service:test-api", "team:qa"]
+  api_gateway_name    = "test-api-gateway"
+  criticality         = "low"
+  notification_target = "@slack-test-team"
+  evaluation_period   = "last_30m"
+  baseline_period     = "day_before"
+  tags                = ["service:test-api", "team:qa"]
 }
 
 # SQS Monitors Examples
@@ -164,4 +164,76 @@ module "dev_db_monitors" {
   notification_target    = "@slack-dev-team"
   evaluation_period      = "last_30m"
   tags                   = ["service:database", "team:development", "environment:dev"]
+}
+
+# DynamoDB Monitors Examples
+module "user_table_monitors" {
+  source = "../datadog_dynamodb_monitors"
+
+  table_name           = "user-profiles-table"
+  criticality          = "high"
+  notification_target  = "@slack-dynamodb-alerts @pagerduty-db-team"
+  provisioned_capacity = true
+  read_capacity_units  = 100
+  write_capacity_units = 50
+  tags                 = ["service:user-profiles", "team:backend"]
+  create_dashboard     = true
+}
+
+module "session_table_monitors" {
+  source = "../datadog_dynamodb_monitors"
+
+  table_name           = "session-data-table"
+  criticality          = "medium"
+  notification_target  = "@slack-dynamodb-alerts"
+  provisioned_capacity = false # On-demand capacity
+  prefix               = "[Session DynamoDB] "
+  tags                 = ["service:sessions", "team:backend"]
+}
+
+module "analytics_table_monitors" {
+  source = "../datadog_dynamodb_monitors"
+
+  table_name          = "analytics-events-table"
+  criticality         = "low"
+  notification_target = "@slack-analytics-team"
+  evaluation_period   = "last_30m"
+  tags                = ["service:analytics", "team:data"]
+}
+
+# ElastiCache Monitors Examples
+module "redis_cache_monitors" {
+  source = "../datadog_elasticache_monitors"
+
+  cache_cluster_id    = "production-redis-cluster"
+  cache_type          = "redis"
+  criticality         = "high"
+  notification_target = "@slack-cache-alerts @pagerduty-cache-team"
+  max_connections     = 65000
+  tags                = ["service:cache", "team:platform", "cache_type:redis"]
+  create_dashboard    = true
+}
+
+module "redis_replica_monitors" {
+  source = "../datadog_elasticache_monitors"
+
+  cache_cluster_id    = "production-redis-replica"
+  cache_type          = "redis"
+  is_replica          = true
+  criticality         = "medium"
+  notification_target = "@slack-cache-alerts"
+  prefix              = "[Redis Replica] "
+  tags                = ["service:cache", "team:platform", "cache_type:redis", "role:replica"]
+}
+
+module "memcached_cache_monitors" {
+  source = "../datadog_elasticache_monitors"
+
+  cache_cluster_id    = "session-memcached-cluster"
+  cache_type          = "memcached"
+  criticality         = "medium"
+  notification_target = "@slack-cache-alerts"
+  max_connections     = 1024
+  evaluation_period   = "last_15m"
+  tags                = ["service:sessions", "team:backend", "cache_type:memcached"]
 }

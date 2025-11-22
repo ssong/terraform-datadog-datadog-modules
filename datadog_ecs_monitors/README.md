@@ -10,6 +10,16 @@ This Terraform module creates a set of Datadog monitors for AWS ECS services. Th
 4. **Service Failures Monitor**: Alerts when ECS service deployment failures occur
 5. **Container Restarts Monitor**: Alerts when containers are frequently restarting
 
+## Dashboard
+
+When `create_dashboard = true`, creates a dashboard with 6 widgets using modern Datadog query syntax:
+- CPU utilization percentage
+- Memory utilization percentage
+- Running vs desired task counts
+- Task count deviation percentage
+- Deployment failures
+- Container restarts
+
 ## Usage
 
 ```hcl

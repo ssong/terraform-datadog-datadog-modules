@@ -6,6 +6,7 @@ output "monitor_ids" {
     throttles             = datadog_monitor.lambda_throttles.id
     invocation_drop       = datadog_monitor.lambda_invocation_drop.id
     concurrent_executions = datadog_monitor.lambda_concurrent_executions.id
+    cold_start_duration   = datadog_monitor.lambda_cold_start_duration.id
   }
 }
 

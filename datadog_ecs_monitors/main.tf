@@ -4,59 +4,59 @@ locals {
     medium = 2
     high   = 1
   }
-  
+
   dashboard_title_prefix = var.create_dashboard ? "${var.dashboard_name_prefix} - ECS Service: ${var.cluster_name}/${var.service_name}" : ""
 
   thresholds = {
     low = {
-      cpu_utilization         = 90.0
-      cpu_warning             = 80.0
-      cpu_recovery            = 75.0
-      memory_utilization      = 90.0
-      memory_warning          = 80.0
-      memory_recovery         = 75.0
-      task_count_deviation    = 30.0
-      task_deviation_warning  = 20.0
-      task_deviation_recovery = 15.0
-      service_failures        = 5
-      service_failures_warning = 3
-      service_failures_recovery = 2
-      container_restarts      = 5
-      container_restarts_warning = 3
+      cpu_utilization             = 90.0
+      cpu_warning                 = 80.0
+      cpu_recovery                = 75.0
+      memory_utilization          = 90.0
+      memory_warning              = 80.0
+      memory_recovery             = 75.0
+      task_count_deviation        = 30.0
+      task_deviation_warning      = 20.0
+      task_deviation_recovery     = 15.0
+      service_failures            = 5
+      service_failures_warning    = 3
+      service_failures_recovery   = 2
+      container_restarts          = 5
+      container_restarts_warning  = 3
       container_restarts_recovery = 2
     }
     medium = {
-      cpu_utilization         = 85.0
-      cpu_warning             = 75.0
-      cpu_recovery            = 65.0
-      memory_utilization      = 85.0
-      memory_warning          = 75.0
-      memory_recovery         = 65.0
-      task_count_deviation    = 20.0
-      task_deviation_warning  = 10.0
-      task_deviation_recovery = 7.0
-      service_failures        = 3
-      service_failures_warning = 2
-      service_failures_recovery = 1
-      container_restarts      = 3
-      container_restarts_warning = 2
+      cpu_utilization             = 85.0
+      cpu_warning                 = 75.0
+      cpu_recovery                = 65.0
+      memory_utilization          = 85.0
+      memory_warning              = 75.0
+      memory_recovery             = 65.0
+      task_count_deviation        = 20.0
+      task_deviation_warning      = 10.0
+      task_deviation_recovery     = 7.0
+      service_failures            = 3
+      service_failures_warning    = 2
+      service_failures_recovery   = 1
+      container_restarts          = 3
+      container_restarts_warning  = 2
       container_restarts_recovery = 1
     }
     high = {
-      cpu_utilization         = 80.0
-      cpu_warning             = 70.0
-      cpu_recovery            = 60.0
-      memory_utilization      = 80.0
-      memory_warning          = 70.0
-      memory_recovery         = 60.0
-      task_count_deviation    = 10.0
-      task_deviation_warning  = 5.0
-      task_deviation_recovery = 3.0
-      service_failures        = 2
-      service_failures_warning = 1
-      service_failures_recovery = 0
-      container_restarts      = 2
-      container_restarts_warning = 1
+      cpu_utilization             = 80.0
+      cpu_warning                 = 70.0
+      cpu_recovery                = 60.0
+      memory_utilization          = 80.0
+      memory_warning              = 70.0
+      memory_recovery             = 60.0
+      task_count_deviation        = 10.0
+      task_deviation_warning      = 5.0
+      task_deviation_recovery     = 3.0
+      service_failures            = 2
+      service_failures_warning    = 1
+      service_failures_recovery   = 0
+      container_restarts          = 2
+      container_restarts_warning  = 1
       container_restarts_recovery = 0
     }
   }
@@ -154,7 +154,7 @@ resource "datadog_monitor" "ecs_service_failures" {
 
   include_tags = true
   tags         = concat(var.tags, ["cluster:${var.cluster_name}", "service:${var.service_name}", "managed_by:terraform"])
-  
+
   priority = local.priorities[var.criticality]
 }
 
@@ -178,7 +178,7 @@ resource "datadog_monitor" "ecs_container_restarts" {
 
   include_tags = true
   tags         = concat(var.tags, ["cluster:${var.cluster_name}", "service:${var.service_name}", "managed_by:terraform"])
-  
+
   priority = local.priorities[var.criticality]
 }
 
@@ -188,25 +188,29 @@ resource "datadog_dashboard" "ecs_dashboard" {
   title       = local.dashboard_title_prefix
   description = "Dashboard for ECS Service ${var.service_name} in cluster ${var.cluster_name}"
   layout_type = "ordered"
-  
+
   widget {
     timeseries_definition {
       title = "CPU Utilization (%)"
       request {
-        q            = "avg:aws.ecs.service.cpu_utilization{cluster_name:${var.cluster_name},servicename:${var.service_name}}"
         display_type = "line"
-        metadata {
-          expression = "avg:aws.ecs.service.cpu_utilization{cluster_name:${var.cluster_name},servicename:${var.service_name}}"
+        formulas {
+          formula = "query0"
+        }
+        queries {
+          name        = "query0"
+          query       = "avg:aws.ecs.service.cpu_utilization{cluster_name:${var.cluster_name},servicename:${var.service_name}}"
+          data_source = "metrics"
         }
       }
       marker {
         display_type = "error dashed"
-        value        = "${local.thresholds[var.criticality].cpu_utilization}"
+        value        = local.thresholds[var.criticality].cpu_utilization
         label        = "Critical"
       }
       marker {
         display_type = "warning dashed"
-        value        = "${local.thresholds[var.criticality].cpu_warning}"
+        value        = local.thresholds[var.criticality].cpu_warning
         label        = "Warning"
       }
       yaxis {
@@ -216,25 +220,29 @@ resource "datadog_dashboard" "ecs_dashboard" {
       }
     }
   }
-  
+
   widget {
     timeseries_definition {
       title = "Memory Utilization (%)"
       request {
-        q            = "avg:aws.ecs.service.memory_utilization{cluster_name:${var.cluster_name},servicename:${var.service_name}}"
         display_type = "line"
-        metadata {
-          expression = "avg:aws.ecs.service.memory_utilization{cluster_name:${var.cluster_name},servicename:${var.service_name}}"
+        formulas {
+          formula = "query0"
+        }
+        queries {
+          name        = "query0"
+          query       = "avg:aws.ecs.service.memory_utilization{cluster_name:${var.cluster_name},servicename:${var.service_name}}"
+          data_source = "metrics"
         }
       }
       marker {
         display_type = "error dashed"
-        value        = "${local.thresholds[var.criticality].memory_utilization}"
+        value        = local.thresholds[var.criticality].memory_utilization
         label        = "Critical"
       }
       marker {
         display_type = "warning dashed"
-        value        = "${local.thresholds[var.criticality].memory_warning}"
+        value        = local.thresholds[var.criticality].memory_warning
         label        = "Warning"
       }
       yaxis {
@@ -244,22 +252,29 @@ resource "datadog_dashboard" "ecs_dashboard" {
       }
     }
   }
-  
+
   widget {
     timeseries_definition {
       title = "Running vs Desired Tasks"
       request {
-        q            = "avg:aws.ecs.service.running{cluster_name:${var.cluster_name},servicename:${var.service_name}}"
         display_type = "line"
-        metadata {
-          alias_name = "Running Tasks"
+        formulas {
+          formula = "query0"
+          alias   = "Running Tasks"
         }
-      }
-      request {
-        q            = "avg:aws.ecs.service.desired{cluster_name:${var.cluster_name},servicename:${var.service_name}}"
-        display_type = "line"
-        metadata {
-          alias_name = "Desired Tasks"
+        formulas {
+          formula = "query1"
+          alias   = "Desired Tasks"
+        }
+        queries {
+          name        = "query0"
+          query       = "avg:aws.ecs.service.running{cluster_name:${var.cluster_name},servicename:${var.service_name}}"
+          data_source = "metrics"
+        }
+        queries {
+          name        = "query1"
+          query       = "avg:aws.ecs.service.desired{cluster_name:${var.cluster_name},servicename:${var.service_name}}"
+          data_source = "metrics"
         }
       }
       yaxis {
@@ -268,25 +283,35 @@ resource "datadog_dashboard" "ecs_dashboard" {
       }
     }
   }
-  
+
   widget {
     timeseries_definition {
       title = "Task Count Deviation (%)"
       request {
-        q            = "100 * abs(avg:aws.ecs.service.running{cluster_name:${var.cluster_name},servicename:${var.service_name}} - avg:aws.ecs.service.desired{cluster_name:${var.cluster_name},servicename:${var.service_name}}) / max(avg:aws.ecs.service.desired{cluster_name:${var.cluster_name},servicename:${var.service_name}}, 1)"
         display_type = "line"
-        metadata {
-          expression = "100 * abs(avg:aws.ecs.service.running{cluster_name:${var.cluster_name},servicename:${var.service_name}} - avg:aws.ecs.service.desired{cluster_name:${var.cluster_name},servicename:${var.service_name}}) / max(avg:aws.ecs.service.desired{cluster_name:${var.cluster_name},servicename:${var.service_name}}, 1)"
+        formulas {
+          formula = "100 * abs(query0 - query1) / max(query1, 1)"
+          alias   = "Deviation %"
+        }
+        queries {
+          name        = "query0"
+          query       = "avg:aws.ecs.service.running{cluster_name:${var.cluster_name},servicename:${var.service_name}}"
+          data_source = "metrics"
+        }
+        queries {
+          name        = "query1"
+          query       = "avg:aws.ecs.service.desired{cluster_name:${var.cluster_name},servicename:${var.service_name}}"
+          data_source = "metrics"
         }
       }
       marker {
         display_type = "error dashed"
-        value        = "${local.thresholds[var.criticality].task_count_deviation}"
+        value        = local.thresholds[var.criticality].task_count_deviation
         label        = "Critical"
       }
       marker {
         display_type = "warning dashed"
-        value        = "${local.thresholds[var.criticality].task_deviation_warning}"
+        value        = local.thresholds[var.criticality].task_deviation_warning
         label        = "Warning"
       }
       yaxis {
@@ -296,25 +321,29 @@ resource "datadog_dashboard" "ecs_dashboard" {
       }
     }
   }
-  
+
   widget {
     timeseries_definition {
       title = "Deployment Failures"
       request {
-        q            = "sum:aws.ecs.service.deployment_failures{cluster_name:${var.cluster_name},servicename:${var.service_name}}.as_count()"
         display_type = "bars"
-        metadata {
-          expression = "sum:aws.ecs.service.deployment_failures{cluster_name:${var.cluster_name},servicename:${var.service_name}}.as_count()"
+        formulas {
+          formula = "query0"
+        }
+        queries {
+          name        = "query0"
+          query       = "sum:aws.ecs.service.deployment_failures{cluster_name:${var.cluster_name},servicename:${var.service_name}}.as_count()"
+          data_source = "metrics"
         }
       }
       marker {
         display_type = "error dashed"
-        value        = "${local.thresholds[var.criticality].service_failures}"
+        value        = local.thresholds[var.criticality].service_failures
         label        = "Critical"
       }
       marker {
         display_type = "warning dashed"
-        value        = "${local.thresholds[var.criticality].service_failures_warning}"
+        value        = local.thresholds[var.criticality].service_failures_warning
         label        = "Warning"
       }
       yaxis {
@@ -323,25 +352,29 @@ resource "datadog_dashboard" "ecs_dashboard" {
       }
     }
   }
-  
+
   widget {
     timeseries_definition {
       title = "Container Restarts"
       request {
-        q            = "derivative(avg:aws.ecs.containerinsights.restarts{cluster_name:${var.cluster_name},service_name:${var.service_name}})"
         display_type = "bars"
-        metadata {
-          expression = "derivative(avg:aws.ecs.containerinsights.restarts{cluster_name:${var.cluster_name},service_name:${var.service_name}})"
+        formulas {
+          formula = "derivative(query0)"
+        }
+        queries {
+          name        = "query0"
+          query       = "avg:aws.ecs.containerinsights.restarts{cluster_name:${var.cluster_name},service_name:${var.service_name}}"
+          data_source = "metrics"
         }
       }
       marker {
         display_type = "error dashed"
-        value        = "${local.thresholds[var.criticality].container_restarts}"
+        value        = local.thresholds[var.criticality].container_restarts
         label        = "Critical"
       }
       marker {
         display_type = "warning dashed"
-        value        = "${local.thresholds[var.criticality].container_restarts_warning}"
+        value        = local.thresholds[var.criticality].container_restarts_warning
         label        = "Warning"
       }
       yaxis {
@@ -350,30 +383,30 @@ resource "datadog_dashboard" "ecs_dashboard" {
       }
     }
   }
-  
+
   template_variable {
-    name    = "cluster"
-    prefix  = "cluster_name"
+    name   = "cluster"
+    prefix = "cluster_name"
   }
-  
+
   template_variable {
-    name    = "service"
-    prefix  = "servicename"
+    name   = "service"
+    prefix = "servicename"
   }
-  
+
   template_variable_preset {
     name = "Default"
-    
+
     template_variable {
       name  = "cluster"
       value = var.cluster_name
     }
-    
+
     template_variable {
       name  = "service"
       value = var.service_name
     }
   }
-  
+
   tags = concat(var.tags, ["cluster:${var.cluster_name}", "service:${var.service_name}", "managed_by:terraform"])
 }

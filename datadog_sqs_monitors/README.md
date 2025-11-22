@@ -10,6 +10,15 @@ This Terraform module creates a set of Datadog monitors for AWS SQS queues. The 
 4. **Error Rate Monitor**: Alerts when the rate of invalid messages is high
 5. **Throughput Drop Monitor**: Alerts when message throughput drops significantly
 
+## Dashboard
+
+When `create_dashboard = true`, creates a dashboard with 5 widgets using modern Datadog query syntax:
+- Messages sent vs received
+- Queue depth (visible, not visible, delayed)
+- Age of oldest message
+- Message reception error rate
+- Messages deleted
+
 ## Usage
 
 ```hcl

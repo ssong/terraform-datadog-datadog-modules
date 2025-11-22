@@ -11,6 +11,18 @@ This Terraform module creates a set of Datadog monitors for AWS ElastiCache (Red
 5. **Current Connections Monitor**: Alerts when the ElastiCache cluster is nearing its maximum connection limit
 6. **Replication Lag Monitor** (Redis replicas only): Alerts when a Redis replica has high replication lag
 
+## Dashboard
+
+When `create_dashboard = true`, creates a dashboard with 8 widgets using modern Datadog query syntax:
+- CPU utilization percentage
+- Memory utilization percentage (adapts to Redis vs Memcached)
+- Swap usage
+- Evictions
+- Current connections
+- Replication lag (conditional, Redis replicas only)
+- Cache hit rate (conditional, Redis only)
+- Get & Set commands (conditional, Memcached only)
+
 ## Usage
 
 ```hcl

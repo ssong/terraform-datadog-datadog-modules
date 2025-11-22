@@ -1,11 +1,11 @@
 output "monitor_ids" {
   description = "Map of the created DataDog monitor IDs"
   value = {
-    cpu_utilization    = datadog_monitor.ecs_cpu_utilization.id
-    memory_utilization = datadog_monitor.ecs_memory_utilization.id
+    cpu_utilization      = datadog_monitor.ecs_cpu_utilization.id
+    memory_utilization   = datadog_monitor.ecs_memory_utilization.id
     task_count_deviation = datadog_monitor.ecs_task_count_deviation.id
-    service_failures   = datadog_monitor.ecs_service_failures.id
-    container_restarts = datadog_monitor.ecs_container_restarts.id
+    service_failures     = datadog_monitor.ecs_service_failures.id
+    container_restarts   = datadog_monitor.ecs_container_restarts.id
   }
 }
 
