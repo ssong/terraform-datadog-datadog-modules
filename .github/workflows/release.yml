@@ -1,0 +1,110 @@
+name: Release
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install semantic-release
+        run: |
+          npm install -g semantic-release@23
+          npm install -g @semantic-release/changelog@6
+          npm install -g @semantic-release/git@10
+          npm install -g @semantic-release/github@10
+          npm install -g conventional-changelog-conventionalcommits@7
+
+      - name: Create .releaserc.json
+        run: |
+          cat > .releaserc.json << 'EOF'
+          {
+            "branches": ["main"],
+            "plugins": [
+              [
+                "@semantic-release/commit-analyzer",
+                {
+                  "preset": "conventionalcommits",
+                  "releaseRules": [
+                    { "type": "feat", "release": "minor" },
+                    { "type": "fix", "release": "patch" },
+                    { "type": "perf", "release": "patch" },
+                    { "type": "revert", "release": "patch" },
+                    { "type": "docs", "release": "patch" },
+                    { "type": "chore", "release": false },
+                    { "type": "refactor", "release": "patch" },
+                    { "type": "test", "release": false },
+                    { "type": "build", "release": false },
+                    { "type": "ci", "release": false },
+                    { "breaking": true, "release": "major" }
+                  ]
+                }
+              ],
+              [
+                "@semantic-release/release-notes-generator",
+                {
+                  "preset": "conventionalcommits",
+                  "presetConfig": {
+                    "types": [
+                      { "type": "feat", "section": "🚀 Features" },
+                      { "type": "fix", "section": "🐛 Bug Fixes" },
+                      { "type": "perf", "section": "⚡ Performance Improvements" },
+                      { "type": "revert", "section": "⏪ Reverts" },
+                      { "type": "docs", "section": "📚 Documentation" },
+                      { "type": "refactor", "section": "♻️ Code Refactoring" },
+                      { "type": "test", "section": "✅ Tests", "hidden": true },
+                      { "type": "build", "section": "🔨 Build System", "hidden": true },
+                      { "type": "ci", "section": "👷 CI/CD", "hidden": true },
+                      { "type": "chore", "section": "🔧 Chores", "hidden": true }
+                    ]
+                  }
+                }
+              ],
+              [
+                "@semantic-release/changelog",
+                {
+                  "changelogFile": "CHANGELOG.md",
+                  "changelogTitle": "# Changelog\n\nAll notable changes to this project will be documented in this file. See [Conventional Commits](https://conventionalcommits.org) for commit guidelines."
+                }
+              ],
+              [
+                "@semantic-release/github",
+                {
+                  "successComment": false,
+                  "failComment": false,
+                  "releasedLabels": ["released"]
+                }
+              ],
+              [
+                "@semantic-release/git",
+                {
+                  "assets": ["CHANGELOG.md"],
+                  "message": "chore(release): ${nextRelease.version} [skip ci]\n\n${nextRelease.notes}"
+                }
+              ]
+            ]
+          }
+          EOF
+
+      - name: Run semantic-release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: npx semantic-release

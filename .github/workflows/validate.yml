@@ -1,0 +1,117 @@
+name: Validate
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+jobs:
+  terraform:
+    name: Terraform Validation
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        module:
+          - datadog_lambda_monitors
+          - datadog_api_gateway_monitors
+          - datadog_sqs_monitors
+          - datadog_ecs_monitors
+          - datadog_rds_monitors
+          - datadog_dynamodb_monitors
+          - datadog_elasticache_monitors
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.6.0
+
+      - name: Terraform Format Check
+        working-directory: ${{ matrix.module }}
+        run: terraform fmt -check -recursive
+
+      - name: Terraform Init
+        working-directory: ${{ matrix.module }}
+        run: terraform init -backend=false
+
+      - name: Terraform Validate
+        working-directory: ${{ matrix.module }}
+        run: terraform validate
+
+  tflint:
+    name: TFLint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Cache TFLint plugins
+        uses: actions/cache@v3
+        with:
+          path: ~/.tflint.d/plugins
+          key: ${{ runner.os }}-tflint-${{ hashFiles('.tflint.hcl') }}
+
+      - name: Setup TFLint
+        uses: terraform-linters/setup-tflint@v4
+        with:
+          tflint_version: latest
+
+      - name: Init TFLint
+        run: tflint --init
+
+      - name: Run TFLint
+        run: tflint --recursive --format compact
+
+  commit-lint:
+    name: Commit Message Lint
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install commitlint
+        run: |
+          npm install -g @commitlint/cli@18
+          npm install -g @commitlint/config-conventional@18
+
+      - name: Create commitlint config
+        run: |
+          cat > commitlint.config.js << 'EOF'
+          module.exports = {
+            extends: ['@commitlint/config-conventional'],
+            rules: {
+              'type-enum': [
+                2,
+                'always',
+                [
+                  'feat',
+                  'fix',
+                  'docs',
+                  'style',
+                  'refactor',
+                  'perf',
+                  'test',
+                  'build',
+                  'ci',
+                  'chore',
+                  'revert'
+                ]
+              ]
+            }
+          };
+          EOF
+
+      - name: Validate PR commits
+        run: npx commitlint --from ${{ github.event.pull_request.base.sha }} --to ${{ github.event.pull_request.head.sha }} --verbose
